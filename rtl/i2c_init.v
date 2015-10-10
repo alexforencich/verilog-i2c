@@ -117,6 +117,7 @@ write 0x11223344 to register 0x0004 on devices at 0x50, 0x51, 0x52, and 0x53
 
 00 0001001  start data block
 00 0000011  start write to current address
+1 00000000  write address 0x0004
 1 00000100
 1 00010001  write data 0x11223344
 1 00100010
@@ -124,9 +125,9 @@ write 0x11223344 to register 0x0004 on devices at 0x50, 0x51, 0x52, and 0x53
 1 01000100
 00 0001000  start address block
 01 1010000  address 0x50
-01 1010000  address 0x51
-01 1010000  address 0x52
-01 1010000  address 0x53
+01 1010001  address 0x51
+01 1010010  address 0x52
+01 1010011  address 0x53
 00 0000000  stop
 
 */
