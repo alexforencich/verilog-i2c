@@ -386,7 +386,7 @@ def bench():
             1,    # write_multiple
             1     # stop
         )])
-        data_source_queue.put((b'\x00\x04'+b'\x11\x22\x33\x44'))
+        data_source_queue.put((b'\x00\x04'+b'\x44\x33\x22\x11'))
 
         yield clk.posedge
         yield clk.posedge
@@ -399,7 +399,7 @@ def bench():
         for i in range(0, len(data), 16):
             print(" ".join(("{:02x}".format(c) for c in bytearray(data[i:i+16]))))
 
-        assert i2c_mem_inst1.read_mem(4,4) == b'\x11\x22\x33\x44'
+        assert i2c_mem_inst2.read_mem(4,4) == b'\x44\x33\x22\x11'
 
         yield delay(100)
 
@@ -444,7 +444,7 @@ def bench():
         yield clk.posedge
 
         data = data_sink_queue.get(False)
-        assert data.data == b'\x11\x22\x33\x44'
+        assert data.data == b'\x44\x33\x22\x11'
 
         yield delay(100)
 
