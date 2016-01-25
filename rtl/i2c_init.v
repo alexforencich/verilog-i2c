@@ -27,7 +27,7 @@ THE SOFTWARE.
 `timescale 1ns / 1ps
 
 /*
- * i2c_init
+ * I2C init
  */
 module i2c_init (
     input  wire        clk,
@@ -175,38 +175,38 @@ reg [4:0] state_reg = STATE_IDLE, state_next;
 
 parameter AW = $clog2(INIT_DATA_LEN);
 
-reg [8:0] init_data_reg = 0;
+reg [8:0] init_data_reg = 9'd0;
 
-reg [AW-1:0] address_reg = 0, address_next;
-reg [AW-1:0] address_ptr_reg = 0, address_ptr_next;
-reg [AW-1:0] data_ptr_reg = 0, data_ptr_next;
+reg [AW-1:0] address_reg = {AW{1'b0}}, address_next;
+reg [AW-1:0] address_ptr_reg = {AW{1'b0}}, address_ptr_next;
+reg [AW-1:0] data_ptr_reg = {AW{1'b0}}, data_ptr_next;
 
-reg [6:0] cur_address_reg = 0, cur_address_next;
+reg [6:0] cur_address_reg = 7'd0, cur_address_next;
 
-reg [6:0] cmd_address_reg = 0, cmd_address_next;
-reg cmd_start_reg = 0, cmd_start_next;
-reg cmd_write_reg = 0, cmd_write_next;
-reg cmd_stop_reg = 0, cmd_stop_next;
-reg cmd_valid_reg = 0, cmd_valid_next;
+reg [6:0] cmd_address_reg = 7'd0, cmd_address_next;
+reg cmd_start_reg = 1'b0, cmd_start_next;
+reg cmd_write_reg = 1'b0, cmd_write_next;
+reg cmd_stop_reg = 1'b0, cmd_stop_next;
+reg cmd_valid_reg = 1'b0, cmd_valid_next;
 
-reg [7:0] data_out_reg = 0, data_out_next;
-reg data_out_valid_reg = 0, data_out_valid_next;
+reg [7:0] data_out_reg = 8'd0, data_out_next;
+reg data_out_valid_reg = 1'b0, data_out_valid_next;
 
-reg start_flag_reg = 0, start_flag_next;
+reg start_flag_reg = 1'b0, start_flag_next;
 
-reg busy_reg = 0;
+reg busy_reg = 1'b0;
 
 assign cmd_address = cmd_address_reg;
 assign cmd_start = cmd_start_reg;
-assign cmd_read = 0;
+assign cmd_read = 1'b0;
 assign cmd_write = cmd_write_reg;
-assign cmd_write_multiple = 0;
+assign cmd_write_multiple = 1'b0;
 assign cmd_stop = cmd_stop_reg;
 assign cmd_valid = cmd_valid_reg;
 
 assign data_out = data_out_reg;
 assign data_out_valid = data_out_valid_reg;
-assign data_out_last = 1;
+assign data_out_last = 1'b1;
 
 assign busy = busy_reg;
 
@@ -238,8 +238,8 @@ always @* begin
             STATE_IDLE: begin
                 // wait for start signal
                 if (~start_flag_reg & start) begin
-                    address_next = 0;
-                    start_flag_next = 1;
+                    address_next = {AW{1'b0}};
+                    start_flag_next = 1'b1;
                     state_next = STATE_RUN;
                 end else begin
                     state_next = STATE_IDLE;
@@ -247,15 +247,14 @@ always @* begin
             end
             STATE_RUN: begin
                 // process commands
-                if (init_data_reg[8] == 1) begin
+                if (init_data_reg[8] == 1'b1) begin
                     // write data
-                    //cmd_start_next = 0;
-                    cmd_write_next = 1;
-                    cmd_stop_next = 0;
-                    cmd_valid_next = 1;
+                    cmd_write_next = 1'b1;
+                    cmd_stop_next = 1'b0;
+                    cmd_valid_next = 1'b1;
 
                     data_out_next = init_data_reg[7:0];
-                    data_out_valid_next = 1;
+                    data_out_valid_next = 1'b1;
                     
                     address_next = address_reg + 1;
                     
@@ -263,7 +262,7 @@ always @* begin
                 end else if (init_data_reg[8:7] == 2'b01) begin
                     // write address
                     cmd_address_next = init_data_reg[6:0];
-                    cmd_start_next = 1;
+                    cmd_start_next = 1'b1;
 
                     address_next = address_reg + 1;
                     
@@ -273,12 +272,12 @@ always @* begin
                     data_ptr_next = address_reg + 1;
                     address_next = address_reg + 1;
                     state_next = STATE_TABLE_1;
-                end else if (init_data_reg == 0) begin
+                end else if (init_data_reg == 9'd0) begin
                     // stop
-                    cmd_start_next = 0;
-                    cmd_write_next = 0;
-                    cmd_stop_next = 1;
-                    cmd_valid_next = 1;
+                    cmd_start_next = 1'b0;
+                    cmd_write_next = 1'b0;
+                    cmd_stop_next = 1'b1;
+                    cmd_valid_next = 1'b1;
 
                     state_next = STATE_IDLE;
                 end else begin
@@ -303,12 +302,12 @@ always @* begin
                     // exit mode
                     address_next = address_reg + 1;
                     state_next = STATE_RUN;
-                end else if (init_data_reg == 0) begin
+                end else if (init_data_reg == 9'd0) begin
                     // stop
-                    cmd_start_next = 0;
-                    cmd_write_next = 0;
-                    cmd_stop_next = 1;
-                    cmd_valid_next = 1;
+                    cmd_start_next = 1'b0;
+                    cmd_write_next = 1'b0;
+                    cmd_stop_next = 1'b1;
+                    cmd_valid_next = 1'b1;
 
                     state_next = STATE_IDLE;
                 end else begin
@@ -331,16 +330,16 @@ always @* begin
                     data_ptr_next = address_reg + 1;
                     address_next = address_reg + 1;
                     state_next = STATE_TABLE_1;
-                end else if (init_data_reg == 1) begin
+                end else if (init_data_reg == 9'd1) begin
                     // exit mode
                     address_next = address_reg + 1;
                     state_next = STATE_RUN;
-                end else if (init_data_reg == 0) begin
+                end else if (init_data_reg == 9'd0) begin
                     // stop
-                    cmd_start_next = 0;
-                    cmd_write_next = 0;
-                    cmd_stop_next = 1;
-                    cmd_valid_next = 1;
+                    cmd_start_next = 1'b0;
+                    cmd_write_next = 1'b0;
+                    cmd_stop_next = 1'b1;
+                    cmd_valid_next = 1'b1;
 
                     state_next = STATE_IDLE;
                 end else begin
@@ -351,32 +350,31 @@ always @* begin
             end
             STATE_TABLE_3: begin
                 // process data table with selected address
-                if (init_data_reg[8] == 1) begin
+                if (init_data_reg[8] == 1'b1) begin
                     // write data
-                    //cmd_start_next = 0;
-                    cmd_write_next = 1;
-                    cmd_stop_next = 0;
-                    cmd_valid_next = 1;
+                    cmd_write_next = 1'b1;
+                    cmd_stop_next = 1'b0;
+                    cmd_valid_next = 1'b1;
 
                     data_out_next = init_data_reg[7:0];
-                    data_out_valid_next = 1;
-                    
+                    data_out_valid_next = 1'b1;
+
                     address_next = address_reg + 1;
 
                     state_next = STATE_TABLE_3;
                 end else if (init_data_reg[8:7] == 2'b01) begin
                     // write address
                     cmd_address_next = init_data_reg[6:0];
-                    cmd_start_next = 1;
-                    
+                    cmd_start_next = 1'b1;
+
                     address_next = address_reg + 1;
 
                     state_next = STATE_TABLE_3;
                 end else if (init_data_reg == 9'b000000011) begin
                     // write current address
                     cmd_address_next = cur_address_reg;
-                    cmd_start_next = 1;
-                    
+                    cmd_start_next = 1'b1;
+
                     address_next = address_reg + 1;
 
                     state_next = STATE_TABLE_3;
@@ -389,16 +387,16 @@ always @* begin
                     // address table start
                     address_next = address_ptr_reg;
                     state_next = STATE_TABLE_2;
-                end else if (init_data_reg == 1) begin
+                end else if (init_data_reg == 9'd1) begin
                     // exit mode
                     address_next = address_reg + 1;
                     state_next = STATE_RUN;
-                end else if (init_data_reg == 0) begin
+                end else if (init_data_reg == 9'd0) begin
                     // stop
-                    cmd_start_next = 0;
-                    cmd_write_next = 0;
-                    cmd_stop_next = 1;
-                    cmd_valid_next = 1;
+                    cmd_start_next = 1'b0;
+                    cmd_write_next = 1'b0;
+                    cmd_stop_next = 1'b1;
+                    cmd_valid_next = 1'b1;
 
                     state_next = STATE_IDLE;
                 end else begin
@@ -415,26 +413,21 @@ always @(posedge clk) begin
     if (rst) begin
         state_reg <= STATE_IDLE;
 
-        init_data_reg <= 0;
+        init_data_reg <= 9'd0;
 
-        address_reg <= 0;
-        address_ptr_reg <= 0;
-        data_ptr_reg <= 0;
+        address_reg <= {AW{1'b0}};
+        address_ptr_reg <= {AW{1'b0}};
+        data_ptr_reg <= {AW{1'b0}};
 
-        cur_address_reg <= 0;
+        cur_address_reg <= 7'd0;
 
-        cmd_address_reg <= 0;
-        cmd_start_reg <= 0;
-        cmd_write_reg <= 0;
-        cmd_stop_reg <= 0;
-        cmd_valid_reg <= 0;
+        cmd_valid_reg <= 1'b0;
 
-        data_out_reg <= 0;
-        data_out_valid_reg <= 0;
+        data_out_valid_reg <= 1'b0;
 
-        start_flag_reg <= 0;
+        start_flag_reg <= 1'b0;
 
-        busy_reg <= 0;
+        busy_reg <= 1'b0;
     end else begin
         state_reg <= state_next;
 
@@ -447,19 +440,21 @@ always @(posedge clk) begin
 
         cur_address_reg <= cur_address_next;
 
-        cmd_address_reg <= cmd_address_next;
-        cmd_start_reg <= cmd_start_next;
-        cmd_write_reg <= cmd_write_next;
-        cmd_stop_reg <= cmd_stop_next;
         cmd_valid_reg <= cmd_valid_next;
 
-        data_out_reg <= data_out_next;
         data_out_valid_reg <= data_out_valid_next;
 
         start_flag_reg <= start & start_flag_next;
 
         busy_reg <= (state_reg != STATE_IDLE);
     end
+
+    cmd_address_reg <= cmd_address_next;
+    cmd_start_reg <= cmd_start_next;
+    cmd_write_reg <= cmd_write_next;
+    cmd_stop_reg <= cmd_stop_next;
+
+    data_out_reg <= data_out_next;
 end
 
 endmodule
