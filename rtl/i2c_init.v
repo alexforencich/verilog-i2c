@@ -97,6 +97,7 @@ Commands:
 00 0000011 : start write to current address
 00 0001000 : start address block
 00 0001001 : start data block
+00 1000001 : send I2C stop
 01 aaaaaaa : start write to address
 1 dddddddd : write 8-bit data
 
@@ -267,6 +268,16 @@ always @* begin
                     address_next = address_reg + 1;
                     
                     state_next = STATE_RUN;
+                end else if (init_data_reg == 9'b001000001) begin
+                    // send stop
+                    cmd_write_next = 1'b0;
+                    cmd_start_next = 1'b0;
+                    cmd_stop_next = 1'b1;
+                    cmd_valid_next = 1'b1;
+
+                    address_next = address_reg + 1;
+
+                    state_next = STATE_RUN;
                 end else if (init_data_reg == 9'b000001001) begin
                     // data table start
                     data_ptr_next = address_reg + 1;
@@ -374,6 +385,16 @@ always @* begin
                     // write current address
                     cmd_address_next = cur_address_reg;
                     cmd_start_next = 1'b1;
+
+                    address_next = address_reg + 1;
+
+                    state_next = STATE_TABLE_3;
+                end else if (init_data_reg == 9'b001000001) begin
+                    // send stop
+                    cmd_write_next = 1'b0;
+                    cmd_start_next = 1'b0;
+                    cmd_stop_next = 1'b1;
+                    cmd_valid_next = 1'b1;
 
                     address_next = address_reg + 1;
 
