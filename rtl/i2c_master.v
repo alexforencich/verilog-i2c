@@ -857,7 +857,7 @@ always @(posedge clk) begin
         scl_o_reg <= scl_o_next;
         sda_o_reg <= sda_o_next;
 
-        busy_reg <= !(state_reg == STATE_IDLE || state_reg == STATE_ACTIVE_WRITE || state_reg == STATE_ACTIVE_READ);
+        busy_reg <= !(state_reg == STATE_IDLE || state_reg == STATE_ACTIVE_WRITE || state_reg == STATE_ACTIVE_READ) || !(phy_state_reg == PHY_STATE_IDLE || phy_state_reg == PHY_STATE_ACTIVE);
 
         if (start_bit) begin
             bus_active_reg <= 1'b1;
