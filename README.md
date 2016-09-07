@@ -22,10 +22,16 @@ processor.
 
 I2C master module with AXI stream interfaces to control logic.  
 
+### i2c_master_wbs_8 module
+
+I2C master module with 8-bit Wishbone slave interface.
+
 ### Source Files
 
-    i2c_init.v       : Template I2C bus init state machine module
-    i2c_master.v     : I2C master module
+    axis_fifo.v             : AXI stream FIFO
+    i2c_init.v              : Template I2C bus init state machine module
+    i2c_master.v            : I2C master module
+    i2c_master_wbs_8.v      : I2C master module (8-bit Wishbone slave)
 
 ## Testing
 
@@ -38,3 +44,4 @@ individual test scripts can be run with python directly.
 
     tb/axis_ep.py        : MyHDL AXI Stream endpoints
     tb/i2c.py            : MyHDL I2C master and slave models
+    tb/wb.py             : MyHDL Wishbone master model and RAM model
