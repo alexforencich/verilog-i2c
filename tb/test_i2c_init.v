@@ -57,23 +57,26 @@ wire busy;
 
 initial begin
     // myhdl integration
-    $from_myhdl(clk,
-                rst,
-                current_test,
-                cmd_ready,
-                data_out_ready,
-                start);
-    $to_myhdl(cmd_address,
-              cmd_start,
-              cmd_read,
-              cmd_write,
-              cmd_write_multiple,
-              cmd_stop,
-              cmd_valid,
-              data_out,
-              data_out_valid,
-              data_out_last,
-              busy);
+    $from_myhdl(
+        clk,
+        rst,
+        current_test,
+        cmd_ready,
+        data_out_ready,
+        start);
+    $to_myhdl(
+        cmd_address,
+        cmd_start,
+        cmd_read,
+        cmd_write,
+        cmd_write_multiple,
+        cmd_stop,
+        cmd_valid,
+        data_out,
+        data_out_valid,
+        data_out_last,
+        busy
+    );
 
     // dump file
     $dumpfile("test_i2c_init.lxt");

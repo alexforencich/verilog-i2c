@@ -25,37 +25,32 @@ THE SOFTWARE.
 from myhdl import *
 import mmap
 
-try:
-    from queue import Queue
-except ImportError:
-    from Queue import Queue
-
 class I2CMaster(object):
     def __init__(self):
-        self.command_queue = Queue()
-        self.read_data_queue = Queue()
+        self.command_queue = []
+        self.read_data_queue = []
         self.has_logic = False
         self.clk = None
         self.busy = False
 
     def init_read(self, address, length):
-        self.command_queue.put(('r', address, length))
+        self.command_queue.append(('r', address, length))
 
     def init_write(self, address, data):
-        self.command_queue.put(('w', address, data))
+        self.command_queue.append(('w', address, data))
 
     def idle(self):
-        return self.command_queue.empty() and not self.busy
+        return len(self.command_queue) == 0 and not self.busy
 
     def wait(self):
         while not self.idle():
             yield self.clk.posedge
 
     def read_data_ready(self):
-        return not self.read_data_queue.empty()
+        return len(self.read_data_queue) > 0
 
     def get_read_data(self):
-        return self.read_data_queue.get(False)
+        return self.read_data_queue.pop(0)
 
     def read(self, address, length):
         self.init_read(address, length)
@@ -68,16 +63,17 @@ class I2CMaster(object):
         yield self.wait()
 
     def create_logic(self,
-                     clk,
-                     rst,
-                     scl_i,
-                     scl_o,
-                     scl_t,
-                     sda_i,
-                     sda_o,
-                     sda_t,
-                     prescale=2,
-                     name=None):
+                clk,
+                rst,
+                scl_i,
+                scl_o,
+                scl_t,
+                sda_i,
+                sda_o,
+                sda_t,
+                prescale=2,
+                name=None
+            ):
 
         if self.has_logic:
             raise Exception("Logic already instantiated!")
@@ -223,8 +219,8 @@ class I2CMaster(object):
                 self.busy = False
 
                 # check for commands
-                if not self.command_queue.empty():
-                    cmd = self.command_queue.get(False)
+                if len(self.command_queue) > 0:
+                    cmd = self.command_queue.pop(0)
                     self.busy = True
 
                     addr = cmd[1]
@@ -264,7 +260,7 @@ class I2CMaster(object):
                         if name is not None:
                             print("[%s] Read data a:0x%02x d:%s" % (name, addr, " ".join(("{:02x}".format(c) for c in bytearray(data)))))
 
-                        self.read_data_queue.put((addr, data))
+                        self.read_data_queue.append((addr, data))
 
                     else:
                         # bad command; ignore it
@@ -293,16 +289,17 @@ class I2CMem(object):
         self.mem.write(data)
 
     def create_logic(self,
-                     scl_i,
-                     scl_o,
-                     scl_t,
-                     sda_i,
-                     sda_o,
-                     sda_t,
-                     abw=2,
-                     address=0x50,
-                     latency=0,
-                     name=None):
+                scl_i,
+                scl_o,
+                scl_t,
+                sda_i,
+                sda_o,
+                sda_t,
+                abw=2,
+                address=0x50,
+                latency=0,
+                name=None
+            ):
         
         if self.has_logic:
             raise Exception("Logic already instantiated!")

@@ -63,22 +63,26 @@ wire i2c_sda_t;
 
 initial begin
     // myhdl integration
-    $from_myhdl(clk,
-                rst,
-                current_test,
-                wbs_adr_i,
-                wbs_dat_i,
-                wbs_we_i,
-                wbs_stb_i,
-                wbs_cyc_i,
-                i2c_scl_i,
-                i2c_sda_i);
-    $to_myhdl(wbs_dat_o,
-              wbs_ack_o,
-              i2c_scl_o,
-              i2c_scl_t,
-              i2c_sda_o,
-              i2c_sda_t);
+    $from_myhdl(
+        clk,
+        rst,
+        current_test,
+        wbs_adr_i,
+        wbs_dat_i,
+        wbs_we_i,
+        wbs_stb_i,
+        wbs_cyc_i,
+        i2c_scl_i,
+        i2c_sda_i
+    );
+    $to_myhdl(
+        wbs_dat_o,
+        wbs_ack_o,
+        i2c_scl_o,
+        i2c_scl_t,
+        i2c_sda_o,
+        i2c_sda_t
+    );
 
     // dump file
     $dumpfile("test_i2c_master_wbs_8.lxt");

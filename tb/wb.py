@@ -25,21 +25,16 @@ THE SOFTWARE.
 from myhdl import *
 import mmap
 
-try:
-    from queue import Queue
-except ImportError:
-    from Queue import Queue
-
 class WBMaster(object):
     def __init__(self):
-        self.command_queue = Queue()
-        self.read_data_queue = Queue()
+        self.command_queue = []
+        self.read_data_queue = []
         self.has_logic = False
         self.clk = None
         self.cyc_o = None
 
     def init_read(self, address, length):
-        self.command_queue.put(('r', address, length))
+        self.command_queue.append(('r', address, length))
 
     def init_read_words(self, address, length, ws=2):
         assert ws in (1, 2, 4, 8)
@@ -52,7 +47,7 @@ class WBMaster(object):
         self.init_read_words(address, length, 8)
 
     def init_write(self, address, data):
-        self.command_queue.put(('w', address, data))
+        self.command_queue.append(('w', address, data))
 
     def init_write_words(self, address, data, ws=2):
         assert ws in (1, 2, 4, 8)
@@ -72,17 +67,17 @@ class WBMaster(object):
         self.init_write_words(address, data, 8)
 
     def idle(self):
-        return self.command_queue.empty() and not self.cyc_o.next
+        return len(self.command_queue) == 0 and not self.cyc_o.next
 
     def wait(self):
         while not self.idle():
             yield self.clk.posedge
 
     def read_data_ready(self):
-        return not self.read_data_queue.empty()
+        return len(self.read_data_queue) > 0
 
     def get_read_data(self):
-        return self.read_data_queue.get(False)
+        return self.read_data_queue.pop(0)
 
     def get_read_data_words(self, ws=2):
         assert ws in (1, 2, 4, 8)
@@ -106,17 +101,18 @@ class WBMaster(object):
         return self.get_read_data_words(8)
 
     def create_logic(self,
-                     clk,
-                     adr_o=Signal(intbv(0)[8:]),
-                     dat_i=None,
-                     dat_o=None,
-                     we_o=Signal(bool(0)),
-                     sel_o=Signal(intbv(1)[1:]),
-                     stb_o=Signal(bool(0)),
-                     ack_i=Signal(bool(0)),
-                     cyc_o=Signal(bool(0)),
-                     name=None):
-        
+                clk,
+                adr_o=Signal(intbv(0)[8:]),
+                dat_i=None,
+                dat_o=None,
+                we_o=Signal(bool(0)),
+                sel_o=Signal(intbv(1)[1:]),
+                stb_o=Signal(bool(0)),
+                ack_i=Signal(bool(0)),
+                cyc_o=Signal(bool(0)),
+                name=None
+            ):
+
         if self.has_logic:
             raise Exception("Logic already instantiated!")
 
@@ -146,8 +142,8 @@ class WBMaster(object):
                 yield clk.posedge
 
                 # check for commands
-                if not self.command_queue.empty():
-                    cmd = self.command_queue.get(False)
+                if len(self.command_queue) > 0:
+                    cmd = self.command_queue.pop(0)
 
                     # address
                     addr = cmd[1]
@@ -311,7 +307,7 @@ class WBMaster(object):
                         if name is not None:
                             print("[%s] Read data a:0x%08x d:%s" % (name, addr, " ".join(("{:02x}".format(c) for c in bytearray(data)))))
 
-                        self.read_data_queue.put((addr, data))
+                        self.read_data_queue.append((addr, data))
 
         return logic
 
@@ -365,18 +361,19 @@ class WBRam(object):
         return self.write_words(address, length, 8)
 
     def create_port(self,
-                    clk,
-                    adr_i=Signal(intbv(0)[8:]),
-                    dat_i=None,
-                    dat_o=None,
-                    we_i=Signal(bool(0)),
-                    sel_i=Signal(intbv(1)[1:]),
-                    stb_i=Signal(bool(0)),
-                    ack_o=Signal(bool(0)),
-                    cyc_i=Signal(bool(0)),
-                    latency=1,
-                    async=False,
-                    name=None):
+                clk,
+                adr_i=Signal(intbv(0)[8:]),
+                dat_i=None,
+                dat_o=None,
+                we_i=Signal(bool(0)),
+                sel_i=Signal(intbv(1)[1:]),
+                stb_i=Signal(bool(0)),
+                ack_o=Signal(bool(0)),
+                cyc_i=Signal(bool(0)),
+                latency=1,
+                async=False,
+                name=None
+            ):
 
         @instance
         def logic():

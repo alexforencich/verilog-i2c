@@ -30,7 +30,7 @@ import i2c
 import wb
 
 module = 'i2c_master_wbs_8'
-testbench = 'test_i2c_master_wbs_8'
+testbench = 'test_%s' % module
 
 srcs = []
 
@@ -42,47 +42,6 @@ srcs.append("%s.v" % testbench)
 src = ' '.join(srcs)
 
 build_cmd = "iverilog -o %s.vvp %s" % (testbench, src)
-
-def dut_i2c_master_wbs_8(clk,
-                         rst,
-                         current_test,
-
-                         wbs_adr_i,
-                         wbs_dat_i,
-                         wbs_dat_o,
-                         wbs_we_i,
-                         wbs_stb_i,
-                         wbs_ack_o,
-                         wbs_cyc_i,
-
-                         i2c_scl_i,
-                         i2c_scl_o,
-                         i2c_scl_t,
-                         i2c_sda_i,
-                         i2c_sda_o,
-                         i2c_sda_t):
-
-    if os.system(build_cmd):
-        raise Exception("Error running build command")
-    return Cosimulation("vvp -m myhdl %s.vvp -lxt2" % testbench,
-                clk=clk,
-                rst=rst,
-                current_test=current_test,
-
-                wbs_adr_i=wbs_adr_i,
-                wbs_dat_i=wbs_dat_i,
-                wbs_dat_o=wbs_dat_o,
-                wbs_we_i=wbs_we_i,
-                wbs_stb_i=wbs_stb_i,
-                wbs_ack_o=wbs_ack_o,
-                wbs_cyc_i=wbs_cyc_i,
-
-                i2c_scl_i=i2c_scl_i,
-                i2c_scl_o=i2c_scl_o,
-                i2c_scl_t=i2c_scl_t,
-                i2c_sda_i=i2c_sda_i,
-                i2c_sda_o=i2c_sda_o,
-                i2c_sda_t=i2c_sda_t)
 
 def bench():
 
@@ -135,63 +94,75 @@ def bench():
     # WB master
     wbm_inst = wb.WBMaster()
 
-    wbm_logic = wbm_inst.create_logic(clk,
-                                      adr_o=wbs_adr_i,
-                                      dat_i=wbs_dat_o,
-                                      dat_o=wbs_dat_i,
-                                      we_o=wbs_we_i,
-                                      stb_o=wbs_stb_i,
-                                      ack_i=wbs_ack_o,
-                                      cyc_o=wbs_cyc_i,
-                                      name='master')
+    wbm_logic = wbm_inst.create_logic(
+        clk,
+        adr_o=wbs_adr_i,
+        dat_i=wbs_dat_o,
+        dat_o=wbs_dat_i,
+        we_o=wbs_we_i,
+        stb_o=wbs_stb_i,
+        ack_i=wbs_ack_o,
+        cyc_o=wbs_cyc_i,
+        name='master'
+    )
 
     # I2C memory model 1
     i2c_mem_inst1 = i2c.I2CMem(1024)
 
-    i2c_mem_logic1 = i2c_mem_inst1.create_logic(scl_i=s1_scl_i,
-                                                scl_o=s1_scl_o,
-                                                scl_t=s1_scl_t,
-                                                sda_i=s1_sda_i,
-                                                sda_o=s1_sda_o,
-                                                sda_t=s1_sda_t,
-                                                abw=2,
-                                                address=0x50,
-                                                latency=0,
-                                                name='slave1')
+    i2c_mem_logic1 = i2c_mem_inst1.create_logic(
+        scl_i=s1_scl_i,
+        scl_o=s1_scl_o,
+        scl_t=s1_scl_t,
+        sda_i=s1_sda_i,
+        sda_o=s1_sda_o,
+        sda_t=s1_sda_t,
+        abw=2,
+        address=0x50,
+        latency=0,
+        name='slave1'
+    )
 
     # I2C memory model 2
     i2c_mem_inst2 = i2c.I2CMem(1024)
 
-    i2c_mem_logic2 = i2c_mem_inst2.create_logic(scl_i=s2_scl_i,
-                                                scl_o=s2_scl_o,
-                                                scl_t=s2_scl_t,
-                                                sda_i=s2_sda_i,
-                                                sda_o=s2_sda_o,
-                                                sda_t=s2_sda_t,
-                                                abw=2,
-                                                address=0x51,
-                                                latency=1000,
-                                                name='slave2')
+    i2c_mem_logic2 = i2c_mem_inst2.create_logic(
+        scl_i=s2_scl_i,
+        scl_o=s2_scl_o,
+        scl_t=s2_scl_t,
+        sda_i=s2_sda_i,
+        sda_o=s2_sda_o,
+        sda_t=s2_sda_t,
+        abw=2,
+        address=0x51,
+        latency=1000,
+        name='slave2'
+    )
 
     # DUT
-    dut = dut_i2c_master_wbs_8(clk,
-                               rst,
-                               current_test,
+    if os.system(build_cmd):
+        raise Exception("Error running build command")
+    
+    dut = Cosimulation(
+        "vvp -m myhdl %s.vvp -lxt2" % testbench,
+        clk=clk,
+        rst=rst,
+        current_test=current_test,
 
-                               wbs_adr_i,
-                               wbs_dat_i,
-                               wbs_dat_o,
-                               wbs_we_i,
-                               wbs_stb_i,
-                               wbs_ack_o,
-                               wbs_cyc_i,
+        wbs_adr_i=wbs_adr_i,
+        wbs_dat_i=wbs_dat_i,
+        wbs_dat_o=wbs_dat_o,
+        wbs_we_i=wbs_we_i,
+        wbs_stb_i=wbs_stb_i,
+        wbs_ack_o=wbs_ack_o,
+        wbs_cyc_i=wbs_cyc_i,
 
-                               i2c_scl_i,
-                               i2c_scl_o,
-                               i2c_scl_t,
-                               i2c_sda_i,
-                               i2c_sda_o,
-                               i2c_sda_t)
+        i2c_scl_i=i2c_scl_i,
+        i2c_scl_o=i2c_scl_o,
+        i2c_scl_t=i2c_scl_t,
+        i2c_sda_i=i2c_sda_i,
+        i2c_sda_o=i2c_sda_o,
+        i2c_sda_t=i2c_sda_t
+    )
 
     @always_comb
     def bus():

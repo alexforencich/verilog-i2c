@@ -26,91 +26,20 @@ THE SOFTWARE.
 from myhdl import *
 import os
 
-try:
-    from queue import Queue
-except ImportError:
-    from Queue import Queue
-
 import axis_ep
 import i2c
 
 module = 'i2c_master'
+testbench = 'test_%s' % module
 
 srcs = []
 
 srcs.append("../rtl/%s.v" % module)
-srcs.append("test_%s.v" % module)
+srcs.append("%s.v" % testbench)
 
 src = ' '.join(srcs)
 
-build_cmd = "iverilog -o test_%s.vvp %s" % (module, src)
-
-def dut_i2c_master(clk,
-                   rst,
-                   current_test,
-                   cmd_address,
-                   cmd_start,
-                   cmd_read,
-                   cmd_write,
-                   cmd_write_multiple,
-                   cmd_stop,
-                   cmd_valid,
-                   cmd_ready,
-                   data_in,
-                   data_in_valid,
-                   data_in_ready,
-                   data_in_last,
-                   data_out,
-                   data_out_valid,
-                   data_out_ready,
-                   data_out_last,
-                   scl_i,
-                   scl_o,
-                   scl_t,
-                   sda_i,
-                   sda_o,
-                   sda_t,
-                   busy,
-                   bus_control,
-                   bus_active,
-                   missed_ack,
-                   prescale,
-                   stop_on_idle):
-
-    if os.system(build_cmd):
-        raise Exception("Error running build command")
-    return Cosimulation("vvp -m myhdl test_%s.vvp -lxt2" % module,
-                clk=clk,
-                rst=rst,
-                current_test=current_test,
-                cmd_address=cmd_address,
-                cmd_start=cmd_start,
-                cmd_read=cmd_read,
-                cmd_write=cmd_write,
-                cmd_write_multiple=cmd_write_multiple,
-                cmd_stop=cmd_stop,
-                cmd_valid=cmd_valid,
-                cmd_ready=cmd_ready,
-                data_in=data_in,
-                data_in_valid=data_in_valid,
-                data_in_ready=data_in_ready,
-                data_in_last=data_in_last,
-                data_out=data_out,
-                data_out_valid=data_out_valid,
-                data_out_ready=data_out_ready,
-                data_out_last=data_out_last,
-                scl_i=scl_i,
-                scl_o=scl_o,
-                scl_t=scl_t,
-                sda_i=sda_i,
-                sda_o=sda_o,
-                sda_t=sda_t,
-                busy=busy,
-                bus_control=bus_control,
-                bus_active=bus_active,
-                missed_ack=missed_ack,
-                prescale=prescale,
-                stop_on_idle=stop_on_idle)
+build_cmd = "iverilog -o %s.vvp %s" % (testbench, src)
 
 def bench():
 
@@ -170,102 +99,124 @@ def bench():
     s2_sda_t = Signal(bool(1))
 
     # sources and sinks
-    cmd_source_queue = Queue()
     cmd_source_pause = Signal(bool(0))
-    data_source_queue = Queue()
     data_source_pause = Signal(bool(0))
-    data_sink_queue = Queue()
     data_sink_pause = Signal(bool(0))
 
-    cmd_source = axis_ep.AXIStreamSource(clk,
-                                     rst,
-                                     tdata=(cmd_address, cmd_start, cmd_read, cmd_write, cmd_write_multiple, cmd_stop),
-                                     tvalid=cmd_valid,
-                                     tready=cmd_ready,
-                                     fifo=cmd_source_queue,
-                                     pause=cmd_source_pause,
-                                     name='cmd_source')
+    cmd_source = axis_ep.AXIStreamSource()
 
-    data_source = axis_ep.AXIStreamSource(clk,
-                                     rst,
-                                     tdata=data_in,
-                                     tvalid=data_in_valid,
-                                     tready=data_in_ready,
-                                     tlast=data_in_last,
-                                     fifo=data_source_queue,
-                                     pause=data_source_pause,
-                                     name='data_source')
+    cmd_source_logic = cmd_source.create_logic(
+        clk,
+        rst,
+        tdata=(cmd_address, cmd_start, cmd_read, cmd_write, cmd_write_multiple, cmd_stop),
+        tvalid=cmd_valid,
+        tready=cmd_ready,
+        pause=cmd_source_pause,
+        name='cmd_source'
+    )
 
-    data_sink = axis_ep.AXIStreamSink(clk,
-                                     rst,
-                                     tdata=data_out,
-                                     tvalid=data_out_valid,
-                                     tready=data_out_ready,
-                                     tlast=data_out_last,
-                                     fifo=data_sink_queue,
-                                     pause=data_sink_pause,
-                                     name='data_sink')
+    data_source = axis_ep.AXIStreamSource()
+
+    data_source_logic = data_source.create_logic(
+        clk,
+        rst,
+        tdata=data_in,
+        tvalid=data_in_valid,
+        tready=data_in_ready,
+        tlast=data_in_last,
+        pause=data_source_pause,
+        name='data_source'
+    )
+
+    data_sink = axis_ep.AXIStreamSink()
+
+    data_sink_logic = data_sink.create_logic(
+        clk,
+        rst,
+        tdata=data_out,
+        tvalid=data_out_valid,
+        tready=data_out_ready,
+        tlast=data_out_last,
+        pause=data_sink_pause,
+        name='data_sink'
+    )
 
     # I2C memory model 1
     i2c_mem_inst1 = i2c.I2CMem(1024)
 
-    i2c_mem_logic1 = i2c_mem_inst1.create_logic(scl_i=s1_scl_i,
-                                                scl_o=s1_scl_o,
-                                                scl_t=s1_scl_t,
-                                                sda_i=s1_sda_i,
-                                                sda_o=s1_sda_o,
-                                                sda_t=s1_sda_t,
-                                                abw=2,
-                                                address=0x50,
-                                                latency=0,
-                                                name='slave1')
+    i2c_mem_logic1 = i2c_mem_inst1.create_logic(
+        scl_i=s1_scl_i,
+        scl_o=s1_scl_o,
+        scl_t=s1_scl_t,
+        sda_i=s1_sda_i,
+        sda_o=s1_sda_o,
+        sda_t=s1_sda_t,
+        abw=2,
+        address=0x50,
+        latency=0,
+        name='slave1'
+    )
 
     # I2C memory model 2
     i2c_mem_inst2 = i2c.I2CMem(1024)
 
-    i2c_mem_logic2 = i2c_mem_inst2.create_logic(scl_i=s2_scl_i,
-                                                scl_o=s2_scl_o,
-                                                scl_t=s2_scl_t,
-                                                sda_i=s2_sda_i,
-                                                sda_o=s2_sda_o,
-                                                sda_t=s2_sda_t,
-                                                abw=2,
-                                                address=0x51,
-                                                latency=1000,
-                                                name='slave2')
+    i2c_mem_logic2 = i2c_mem_inst2.create_logic(
+        scl_i=s2_scl_i,
+        scl_o=s2_scl_o,
+        scl_t=s2_scl_t,
+        sda_i=s2_sda_i,
+        sda_o=s2_sda_o,
+        sda_t=s2_sda_t,
+        abw=2,
+        address=0x51,
+        latency=1000,
+        name='slave2'
+    )
 
     # DUT
-    dut = dut_i2c_master(clk,
-                         rst,
-                         current_test,
-                         cmd_address,
-                         cmd_start,
-                         cmd_read,
-                         cmd_write,
-                         cmd_write_multiple,
-                         cmd_stop,
-                         cmd_valid,
-                         cmd_ready,
-                         data_in,
-                         data_in_valid,
-                         data_in_ready,
-                         data_in_last,
-                         data_out,
-                         data_out_valid,
-                         data_out_ready,
-                         data_out_last,
-                         scl_i,
-                         scl_o,
-                         scl_t,
-                         sda_i,
-                         sda_o,
-                         sda_t,
-                         busy,
-                         bus_control,
-                         bus_active,
-                         missed_ack,
-                         prescale,
-                         stop_on_idle)
+    if os.system(build_cmd):
+        raise Exception("Error running build command")
+
+    dut = Cosimulation(
+        "vvp -m myhdl %s.vvp -lxt2" % testbench,
+        clk=clk,
+        rst=rst,
+        current_test=current_test,
+
+        cmd_address=cmd_address,
+        cmd_start=cmd_start,
+        cmd_read=cmd_read,
+        cmd_write=cmd_write,
+        cmd_write_multiple=cmd_write_multiple,
+        cmd_stop=cmd_stop,
+        cmd_valid=cmd_valid,
+        cmd_ready=cmd_ready,
+
+        data_in=data_in,
+        data_in_valid=data_in_valid,
+        data_in_ready=data_in_ready,
+        data_in_last=data_in_last,
+
+        data_out=data_out,
+        data_out_valid=data_out_valid,
+        data_out_ready=data_out_ready,
+        data_out_last=data_out_last,
+
+        scl_i=scl_i,
+        scl_o=scl_o,
+        scl_t=scl_t,
+        sda_i=sda_i,
+        sda_o=sda_o,
+        sda_t=sda_t,
+
+        busy=busy,
+        bus_control=bus_control,
+        bus_active=bus_active,
+        missed_ack=missed_ack,
+
+        prescale=prescale,
+        stop_on_idle=stop_on_idle
+    )
 
     @always_comb
     def bus():
@@ -304,7 +255,7 @@ def bench():
         print("test 1: write")
         current_test.next = 1
 
-        cmd_source_queue.put([(
+        cmd_source.send([(
             0x50, # address
             0,    # start
             0,    # read
@@ -312,12 +263,12 @@ def bench():
             1,    # write_multiple
             1     # stop
         )])
-        data_source_queue.put((b'\x00\x04'+b'\x11\x22\x33\x44'))
+        data_source.send((b'\x00\x04'+b'\x11\x22\x33\x44'))
 
         yield clk.posedge
         yield clk.posedge
         yield clk.posedge
-        while busy or bus_active or not cmd_source_queue.empty():
+        while busy or bus_active or not cmd_source.empty():
             yield clk.posedge
         yield clk.posedge
 
@@ -333,7 +284,7 @@ def bench():
         print("test 2: read")
         current_test.next = 2
 
-        cmd_source_queue.put([(
+        cmd_source.send([(
             0x50, # address
             0,    # start
             0,    # read
@@ -341,10 +292,10 @@ def bench():
             1,    # write_multiple
             0     # stop
         )])
-        data_source_queue.put((b'\x00\x04'))
+        data_source.send((b'\x00\x04'))
 
         for i in range(3):
-            cmd_source_queue.put([(
+            cmd_source.send([(
                 0x50, # address
                 0,    # start
                 1,    # read
@@ -353,7 +304,7 @@ def bench():
                 0     # stop
             )])
 
-        cmd_source_queue.put([(
+        cmd_source.send([(
             0x50, # address
             0,    # start
             1,    # read
@@ -365,11 +316,11 @@ def bench():
         yield clk.posedge
         yield clk.posedge
         yield clk.posedge
-        while busy or bus_active or not cmd_source_queue.empty():
+        while busy or bus_active or not cmd_source.empty():
             yield clk.posedge
         yield clk.posedge
 
-        data = data_sink_queue.get(False)
+        data = data_sink.recv()
         assert data.data == b'\x11\x22\x33\x44'
 
         yield delay(100)
@@ -378,7 +329,7 @@ def bench():
         print("test 3: write to slave 2")
         current_test.next = 3
 
-        cmd_source_queue.put([(
+        cmd_source.send([(
             0x51, # address
             0,    # start
             0,    # read
@@ -386,12 +337,12 @@ def bench():
             1,    # write_multiple
             1     # stop
         )])
-        data_source_queue.put((b'\x00\x04'+b'\x44\x33\x22\x11'))
+        data_source.send((b'\x00\x04'+b'\x44\x33\x22\x11'))
 
         yield clk.posedge
         yield clk.posedge
         yield clk.posedge
-        while busy or bus_active or not cmd_source_queue.empty():
+        while busy or bus_active or not cmd_source.empty():
             yield clk.posedge
         yield clk.posedge
 
@@ -407,7 +358,7 @@ def bench():
         print("test 4: read from slave 2")
         current_test.next = 4
 
-        cmd_source_queue.put([(
+        cmd_source.send([(
             0x51, # address
             0,    # start
             0,    # read
@@ -415,10 +366,10 @@ def bench():
             1,    # write_multiple
             0     # stop
         )])
-        data_source_queue.put((b'\x00\x04'))
+        data_source.send((b'\x00\x04'))
 
         for i in range(3):
-            cmd_source_queue.put([(
+            cmd_source.send([(
                 0x51, # address
                 0,    # start
                 1,    # read
@@ -427,7 +378,7 @@ def bench():
                 0     # stop
             )])
 
-        cmd_source_queue.put([(
+        cmd_source.send([(
             0x51, # address
             0,    # start
             1,    # read
@@ -439,18 +390,18 @@ def bench():
         yield clk.posedge
         yield clk.posedge
         yield clk.posedge
-        while busy or bus_active or not cmd_source_queue.empty():
+        while busy or bus_active or not cmd_source.empty():
             yield clk.posedge
         yield clk.posedge
 
-        data = data_sink_queue.get(False)
+        data = data_sink.recv()
         assert data.data == b'\x44\x33\x22\x11'
 
         yield delay(100)
 
         raise StopSimulation
 
-    return dut, cmd_source, data_source, data_sink, i2c_mem_logic1, i2c_mem_logic2, bus, clkgen, check
+    return dut, cmd_source_logic, data_source_logic, data_sink_logic, i2c_mem_logic1, i2c_mem_logic2, bus, clkgen, check
 
 def test_bench():
     sim = Simulation(bench())

@@ -63,44 +63,50 @@ def bench():
     # I2C master
     i2c_master_inst = i2c.I2CMaster()
 
-    i2c_master_logic = i2c_master_inst.create_logic(clk,
-                                                    rst,
-                                                    scl_i=m_scl_i,
-                                                    scl_o=m_scl_o,
-                                                    scl_t=m_scl_t,
-                                                    sda_i=m_sda_i,
-                                                    sda_o=m_sda_o,
-                                                    sda_t=m_sda_t,
-                                                    prescale=2,
-                                                    name='master')
+    i2c_master_logic = i2c_master_inst.create_logic(
+        clk,
+        rst,
+        scl_i=m_scl_i,
+        scl_o=m_scl_o,
+        scl_t=m_scl_t,
+        sda_i=m_sda_i,
+        sda_o=m_sda_o,
+        sda_t=m_sda_t,
+        prescale=2,
+        name='master'
+    )
 
     # I2C memory model 1
     i2c_mem_inst1 = i2c.I2CMem(1024)
 
-    i2c_mem_logic1 = i2c_mem_inst1.create_logic(scl_i=s1_scl_i,
-                                                scl_o=s1_scl_o,
-                                                scl_t=s1_scl_t,
-                                                sda_i=s1_sda_i,
-                                                sda_o=s1_sda_o,
-                                                sda_t=s1_sda_t,
-                                                abw=2,
-                                                address=0x50,
-                                                latency=0,
-                                                name='slave1')
+    i2c_mem_logic1 = i2c_mem_inst1.create_logic(
+        scl_i=s1_scl_i,
+        scl_o=s1_scl_o,
+        scl_t=s1_scl_t,
+        sda_i=s1_sda_i,
+        sda_o=s1_sda_o,
+        sda_t=s1_sda_t,
+        abw=2,
+        address=0x50,
+        latency=0,
+        name='slave1'
+    )
 
     # I2C memory model 2
     i2c_mem_inst2 = i2c.I2CMem(1024)
 
-    i2c_mem_logic2 = i2c_mem_inst2.create_logic(scl_i=s2_scl_i,
-                                                scl_o=s2_scl_o,
-                                                scl_t=s2_scl_t,
-                                                sda_i=s2_sda_i,
-                                                sda_o=s2_sda_o,
-                                                sda_t=s2_sda_t,
-                                                abw=2,
-                                                address=0x51,
-                                                latency=1000,
-                                                name='slave2')
+    i2c_mem_logic2 = i2c_mem_inst2.create_logic(
+        scl_i=s2_scl_i,
+        scl_o=s2_scl_o,
+        scl_t=s2_scl_t,
+        sda_i=s2_sda_i,
+        sda_o=s2_sda_o,
+        sda_t=s2_sda_t,
+        abw=2,
+        address=0x51,
+        latency=1000,
+        name='slave2'
+    )
 
     @always_comb
     def bus():
