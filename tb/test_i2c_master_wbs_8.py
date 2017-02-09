@@ -47,6 +47,7 @@ def bench():
 
     # Parameters
     DEFAULT_PRESCALE = 1
+    FIXED_PRESCALE = 0
     CMD_FIFO = 1
     CMD_FIFO_ADDR_WIDTH = 5
     WRITE_FIFO = 1

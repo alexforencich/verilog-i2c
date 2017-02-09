@@ -32,6 +32,7 @@ THE SOFTWARE.
 module i2c_master_wbs_8 #
 (
     parameter DEFAULT_PRESCALE = 1,
+    parameter FIXED_PRESCALE = 0,
     parameter CMD_FIFO = 1,
     parameter CMD_FIFO_ADDR_WIDTH = 5,
     parameter WRITE_FIFO = 1,
@@ -384,11 +385,15 @@ always @* begin
                 end
                 4'h6: begin
                     // prescale low
-                    prescale_next[7:0] = wbs_dat_i;
+                    if (!FIXED_PRESCALE) begin
+                        prescale_next[7:0] = wbs_dat_i;
+                    end
                 end
                 4'h7: begin
                     // prescale high
-                    prescale_next[15:8] = wbs_dat_i;
+                    if (!FIXED_PRESCALE) begin
+                        prescale_next[15:8] = wbs_dat_i;
+                    end
                 end
             endcase
             wbs_ack_o_next = ~wbs_ack_o_reg;

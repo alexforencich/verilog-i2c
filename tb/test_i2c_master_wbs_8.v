@@ -33,6 +33,7 @@ module test_i2c_master_wbs_8;
 
 // Parameters
 parameter DEFAULT_PRESCALE = 1;
+parameter FIXED_PRESCALE = 0;
 parameter CMD_FIFO = 1;
 parameter CMD_FIFO_ADDR_WIDTH = 5;
 parameter WRITE_FIFO = 1;
@@ -91,6 +92,7 @@ end
 
 i2c_master_wbs_8 #(
     .DEFAULT_PRESCALE(DEFAULT_PRESCALE),
+    .FIXED_PRESCALE(FIXED_PRESCALE),
     .CMD_FIFO(CMD_FIFO),
     .CMD_FIFO_ADDR_WIDTH(CMD_FIFO_ADDR_WIDTH),
     .WRITE_FIFO(WRITE_FIFO),
