@@ -81,6 +81,78 @@ sda   \__/_6_X_5_X_4_X_3_X_2_X_1_X_0_/_W_\_A_/_7_X_6_X_5_X_4_X_3_X_2_X_1_X_0_\_A
     ____   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   ____
 scl  ST \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ SP
 
+Registers:
+
+| Addr  | Name          |   Bit 7   |   Bit 6   |   Bit 5   |   Bit 4   |   Bit 3   |   Bit 2   |   Bit 1   |   Bit 0   |
+|-------|---------------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|
+| 0x00  | Status        |     -     |     -     |     -     |     -     | miss_ack  |  bus_act  | bus_cont  |   busy    |
+| 0x01  | FIFO Status   |  rd_full  | rd_empty  |  wr_ovf   |  wr_full  | wr_empty  |  cmd_ovf  | cmd_full  | cmd_empty |
+| 0x02  | Cmd Addr      |     -     |                               cmd_address[6:0]                                    |
+| 0x03  | Command       |     -     |     -     |     -     | cmd_stop  |     -     | cmd_write | cmd_read  | cmd_start |
+| 0x04  | Data          |                                           data[7:0]                                           |
+| 0x05  | Reserved      |                                               -                                               |
+| 0x06  | Prescale Low  |                                         prescale[7:0]                                         |
+| 0x07  | Prescale High |                                         prescale[15:8]                                        |
+
+Status registers:
+
+| Addr  | Name          |   Bit 7   |   Bit 6   |   Bit 5   |   Bit 4   |   Bit 3   |   Bit 2   |   Bit 1   |   Bit 0   |
+|-------|---------------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|
+| 0x00  | Status        |     -     |     -     |     -     |     -     | miss_ack  |  bus_act  | bus_cont  |   busy    |
+| 0x01  | FIFO Status   |  rd_full  | rd_empty  |  wr_ovf   |  wr_full  | wr_empty  |  cmd_ovf  | cmd_full  | cmd_empty |
+
+busy: high when module is performing an I2C operation
+bus_cont: high when module has control of active bus
+bus_act: high when bus is active
+miss_ack: set high when an ACK pulse from a slave device is not seen; cleared when read
+cmd_empty: command FIFO empty
+cmd_full: command FIFO full
+cmd_ovf: command FIFO overflow; cleared when read
+wr_empty: write data FIFO empty
+wr_full: write data FIFO full
+wr_ovf: write data FIFO overflow; cleared when read
+rd_empty: read data FIFO is empty
+rd_full: read data FIFO is full
+
+Command registers:
+
+| Addr  | Name          |   Bit 7   |   Bit 6   |   Bit 5   |   Bit 4   |   Bit 3   |   Bit 2   |   Bit 1   |   Bit 0   |
+|-------|---------------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|
+| 0x02  | Cmd Addr      |     -     |                               cmd_address[6:0]                                    |
+| 0x03  | Command       |     -     |     -     |     -     | cmd_stop  |     -     | cmd_write | cmd_read  | cmd_start |
+
+cmd_address: I2C address for command
+cmd_start: set high to issue I2C start, write to push on command FIFO
+cmd_read: set high to start read, write to push on command FIFO
+cmd_write: set high to start write, write to push on command FIFO
+cmd_stop: set high to issue I2C stop, write to push on command FIFO
+
+Setting more than one command bit is allowed.  Start or repeated start
+will be issued first, followed by read or write, followed by stop.  Note
+that setting read and write at the same time is not allowed, this will
+result in the command being ignored.  
+
+Data register:
+
+| Addr  | Name          |   Bit 7   |   Bit 6   |   Bit 5   |   Bit 4   |   Bit 3   |   Bit 2   |   Bit 1   |   Bit 0   |
+|-------|---------------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|
+| 0x04  | Data          |                                           data[7:0]                                           |
+
+data: I2C data, write to push on write data FIFO, read to pull from read data FIFO
+
+Prescale register:
+
+| Addr  | Name          |   Bit 7   |   Bit 6   |   Bit 5   |   Bit 4   |   Bit 3   |   Bit 2   |   Bit 1   |   Bit 0   |
+|-------|---------------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|
+| 0x06  | Prescale Low  |                                         prescale[7:0]                                         |
+| 0x07  | Prescale High |                                         prescale[15:8]                                        |
+
+prescale: prescale value
+
+set prescale to 1/4 of the minimum clock period in units of input clk cycles
+
+prescale = Fclk / (FI2Cclk * 4)
+
 Commands:
 
 read
