@@ -399,6 +399,37 @@ def bench():
 
         yield delay(100)
 
+        yield clk.posedge
+        print("test 5: write to nonexistent device")
+        current_test.next = 5
+
+        cmd_source.send([(
+            0x52, # address
+            0,    # start
+            0,    # read
+            0,    # write
+            1,    # write_multiple
+            1     # stop
+        )])
+        data_source.send((b'\x00\x04'+b'\xde\xad\xbe\xef'))
+
+        got_missed_ack = False
+
+        for k in range(1000):
+            got_missed_ack |= missed_ack
+            yield clk.posedge
+
+        assert got_missed_ack
+
+        yield clk.posedge
+        yield clk.posedge
+        yield clk.posedge
+        while busy or bus_active or not cmd_source.empty():
+            yield clk.posedge
+        yield clk.posedge
+
+        yield delay(100)
+
         raise StopSimulation
 
     return dut, cmd_source_logic, data_source_logic, data_sink_logic, i2c_mem_logic1, i2c_mem_logic2, bus, clkgen, check

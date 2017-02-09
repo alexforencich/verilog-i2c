@@ -338,6 +338,35 @@ def bench():
 
         yield delay(100)
 
+        yield clk.posedge
+        print("test 5: write to nonexistent device")
+        current_test.next = 5
+
+        wbm_inst.init_write(2, b'\x52\x04\x00')
+        wbm_inst.init_write(3, b'\x04\x04')
+        wbm_inst.init_write(3, b'\x04\xde')
+        wbm_inst.init_write(3, b'\x04\xad')
+        wbm_inst.init_write(3, b'\x04\xbe')
+        wbm_inst.init_write(3, b'\x14\xef')
+
+        yield wbm_inst.wait()
+        yield clk.posedge
+
+        got_missed_ack = False
+
+        while True:
+            wbm_inst.init_read(0, 1)
+            yield wbm_inst.wait()
+            data = wbm_inst.get_read_data()
+            if data[1][0] & 0x08:
+                got_missed_ack = True
+            if data[1][0] & 0x03 == 0:
+                break
+
+        assert got_missed_ack
+
+        yield delay(100)
+
         raise StopSimulation
 
     return dut, wbm_logic, i2c_mem_logic1, i2c_mem_logic2, bus, clkgen, check
