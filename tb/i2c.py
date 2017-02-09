@@ -238,9 +238,15 @@ class I2CMaster(object):
                         ack = []
                         yield send_byte(addr << 1 | 0, ack)
 
+                        if ack[0]:
+                            print("[%s] No ACK from slave" % name)
+
                         for k in range(len(data)):
                             ack = []
                             yield send_byte(data[k], ack)
+
+                            if ack[0]:
+                                print("[%s] No ACK from slave" % name)
 
                     elif cmd[0] == 'r':
                         # read command
@@ -248,6 +254,9 @@ class I2CMaster(object):
 
                         ack = []
                         yield send_byte(addr << 1 | 1, ack)
+
+                        if ack[0]:
+                            print("[%s] No ACK from slave" % name)
 
                         cnt = cmd[2]
                         data = b''
