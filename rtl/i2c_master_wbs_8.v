@@ -332,7 +332,7 @@ end else begin
     assign cmd_write_int = cmd_write_reg;
     assign cmd_write_multiple_int = cmd_write_multiple_reg;
     assign cmd_stop_int = cmd_stop_reg;
-    assign cmd_valid = cmd_valid_reg;
+    assign cmd_valid_int = cmd_valid_reg;
     assign cmd_ready = cmd_ready_int;
 end
 
