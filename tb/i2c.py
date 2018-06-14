@@ -279,8 +279,7 @@ class I2CMaster(object):
                     # send stop
                     yield send_stop()
 
-
-        return logic
+        return instances()
 
 
 class I2CMem(object):
@@ -506,7 +505,6 @@ class I2CMem(object):
                             # no match, wait for start
                             break
 
-
-        return logic
+        return instances()
 
 
