@@ -261,7 +261,7 @@ class AXIStreamSource(object):
         return len(self.queue)
 
     def empty(self):
-        return self.count() == 0
+        return not self.queue
 
     def create_logic(self,
                 clk,
@@ -344,7 +344,7 @@ class AXIStreamSource(object):
                             tvalid_int.next = False
                             tlast.next = False
                     if (tlast and tready_int and tvalid) or not tvalid_int:
-                        if len(self.queue) > 0:
+                        if self.queue:
                             frame = self.queue.pop(0)
                             frame.B = B
                             frame.N = N
@@ -374,14 +374,15 @@ class AXIStreamSink(object):
         self.has_logic = False
         self.queue = []
         self.read_queue = []
+        self.sync = Signal(intbv(0))
 
     def recv(self):
-        if len(self.queue) > 0:
+        if self.queue:
             return self.queue.pop(0)
         return None
 
     def read(self, count=-1):
-        while len(self.queue) > 0:
+        while self.queue:
             self.read_queue.extend(self.queue.pop(0).data)
         if count < 0:
             count = len(self.read_queue)
@@ -393,7 +394,15 @@ class AXIStreamSink(object):
         return len(self.queue)
 
     def empty(self):
-        return self.count() == 0
+        return not self.queue
+
+    def wait(self, timeout=0):
+        if self.queue:
+            return
+        if timeout:
+            yield self.sync, delay(timeout)
+        else:
+            yield self.sync
 
     def create_logic(self,
                 clk,
@@ -498,6 +507,7 @@ class AXIStreamSink(object):
                             frame.WL = WL
                             frame.parse(data, keep, id, dest, user)
                             self.queue.append(frame)
+                            self.sync.next = not self.sync
                             if name is not None:
                                 print("[%s] Got frame %s" % (name, repr(frame)))
                             frame = AXIStreamFrame()
