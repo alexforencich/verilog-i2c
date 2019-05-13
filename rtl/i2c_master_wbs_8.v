@@ -554,7 +554,7 @@ always @* begin
                 4'h4: begin
                     // data
                     wbs_dat_o_next = data_out;
-                    data_out_ready_next = ~wbs_ack_o_reg;
+                    data_out_ready_next = !wbs_ack_o_reg && data_out_valid;
                 end
                 4'h5: begin
                     // reserved

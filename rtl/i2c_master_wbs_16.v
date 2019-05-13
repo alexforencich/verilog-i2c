@@ -569,7 +569,7 @@ always @* begin
                     wbs_dat_o_next[15:9] = 7'd0;
 
                     if (wbs_sel_i[0]) begin
-                        data_out_ready_next = ~wbs_ack_o_reg;
+                        data_out_ready_next = !wbs_ack_o_reg && data_out_valid;
                     end
                 end
                 3'h6: begin
