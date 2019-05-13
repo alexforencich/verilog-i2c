@@ -1,6 +1,6 @@
 """
 
-Copyright (c) 2015-2017 Alex Forencich
+Copyright (c) 2015-2016 Alex Forencich
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -74,7 +74,7 @@ class WBMaster(object):
             yield self.clk.posedge
 
     def read_data_ready(self):
-        return len(self.read_data_queue) > 0
+        return not self.read_data_queue
 
     def get_read_data(self):
         return self.read_data_queue.pop(0)
@@ -116,28 +116,28 @@ class WBMaster(object):
         if self.has_logic:
             raise Exception("Logic already instantiated!")
 
+        if dat_i is not None:
+            assert len(dat_i) % 8 == 0
+            w = len(dat_i)
+        if dat_o is not None:
+            assert len(dat_o) % 8 == 0
+            w = len(dat_o)
+        if dat_i is not None and dat_o is not None:
+            assert len(dat_i) == len(dat_o)
+
+        bw = int(w/8)   # width of bus in bytes
+        ww = len(sel_o) # width of bus in words
+        ws = int(bw/ww) # word size in bytes
+
+        assert ww in (1, 2, 4, 8)
+        assert ws in (1, 2, 4, 8)
+
         self.has_logic = True
         self.clk = clk
         self.cyc_o = cyc_o
 
         @instance
         def logic():
-            if dat_i is not None:
-                assert len(dat_i) % 8 == 0
-                w = len(dat_i)
-            if dat_o is not None:
-                assert len(dat_o) % 8 == 0
-                w = len(dat_o)
-            if dat_i is not None and dat_o is not None:
-                assert len(dat_i) == len(dat_o)
-
-            bw = int(w/8)   # width of bus in bytes
-            ww = len(sel_o) # width of bus in words
-            ws = int(bw/ww) # word size in bytes
-
-            assert ww in (1, 2, 4, 8)
-            assert ws in (1, 2, 4, 8)
-
             while True:
                 yield clk.posedge
 
@@ -309,7 +309,7 @@ class WBMaster(object):
 
                         self.read_data_queue.append((addr, data))
 
-        return logic
+        return instances()
 
 
 class WBRam(object):
@@ -371,30 +371,30 @@ class WBRam(object):
                 ack_o=Signal(bool(0)),
                 cyc_i=Signal(bool(0)),
                 latency=1,
-                async=False,
+                asynchronous=False,
                 name=None
             ):
 
+        if dat_i is not None:
+            assert len(dat_i) % 8 == 0
+            w = len(dat_i)
+        if dat_o is not None:
+            assert len(dat_o) % 8 == 0
+            w = len(dat_o)
+        if dat_i is not None and dat_o is not None:
+            assert len(dat_i) == len(dat_o)
+
+        bw = int(w/8)   # width of bus in bytes
+        ww = len(sel_i) # width of bus in words
+        ws = int(bw/ww) # word size in bytes
+
+        assert ww in (1, 2, 4, 8)
+        assert ws in (1, 2, 4, 8)
+
         @instance
         def logic():
-            if dat_i is not None:
-                assert len(dat_i) % 8 == 0
-                w = len(dat_i)
-            if dat_o is not None:
-                assert len(dat_o) % 8 == 0
-                w = len(dat_o)
-            if dat_i is not None and dat_o is not None:
-                assert len(dat_i) == len(dat_o)
-
-            bw = int(w/8)   # width of bus in bytes
-            ww = len(sel_i) # width of bus in words
-            ws = int(bw/ww) # word size in bytes
-
-            assert ww in (1, 2, 4, 8)
-            assert ws in (1, 2, 4, 8)
-
             while True:
-                if async:
+                if asynchronous:
                     yield adr_i, cyc_i, stb_i
                 else:
                     yield clk.posedge
@@ -405,7 +405,7 @@ class WBRam(object):
                 addr = int(int(adr_i)/ww)*ww
 
                 if cyc_i & stb_i & ~ack_o:
-                    if async:
+                    if asynchronous:
                         yield delay(latency)
                     else:
                         for i in range(latency):
@@ -437,5 +437,5 @@ class WBRam(object):
                         if name is not None:
                             print("[%s] Read word a:0x%08x d:%s" % (name, addr, " ".join(("{:02x}".format(c) for c in bytearray(data)))))
 
-        return logic
+        return instances()
 
