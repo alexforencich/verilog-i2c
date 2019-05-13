@@ -254,16 +254,16 @@ def bench():
         yield clk.posedge
 
         data = wbm_inst.get_read_data()
-        assert data[1] == b'\x11\x00'
+        assert data[1] == b'\x11\x01'
 
         data = wbm_inst.get_read_data()
-        assert data[1] == b'\x22\x00'
+        assert data[1] == b'\x22\x01'
 
         data = wbm_inst.get_read_data()
-        assert data[1] == b'\x33\x00'
+        assert data[1] == b'\x33\x01'
 
         data = wbm_inst.get_read_data()
-        assert data[1] == b'\x44\x01'
+        assert data[1] == b'\x44\x03'
 
         yield delay(100)
 
@@ -276,7 +276,7 @@ def bench():
         wbm_inst.init_write(4, b'\x44\x00')
         wbm_inst.init_write(4, b'\x33\x00')
         wbm_inst.init_write(4, b'\x22\x00')
-        wbm_inst.init_write(4, b'\x11\x01')
+        wbm_inst.init_write(4, b'\x11\x02')
         wbm_inst.init_write(3, b'\x10')
 
         yield wbm_inst.wait()
@@ -327,16 +327,16 @@ def bench():
         yield clk.posedge
 
         data = wbm_inst.get_read_data()
-        assert data[1] == b'\x44\x00'
+        assert data[1] == b'\x44\x01'
 
         data = wbm_inst.get_read_data()
-        assert data[1] == b'\x33\x00'
+        assert data[1] == b'\x33\x01'
 
         data = wbm_inst.get_read_data()
-        assert data[1] == b'\x22\x00'
+        assert data[1] == b'\x22\x01'
 
         data = wbm_inst.get_read_data()
-        assert data[1] == b'\x11\x01'
+        assert data[1] == b'\x11\x03'
 
         yield delay(100)
 

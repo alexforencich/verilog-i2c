@@ -140,13 +140,14 @@ Data register:
 
 | Addr  | Name          |   Bit 15  |   Bit 14  |   Bit 13  |   Bit 12  |   Bit 11  |   Bit 10  |   Bit 9   |   Bit 8   |
 |-------|---------------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|
-| 0x04  | Data          |     -     |     -     |     -     |     -     |     -     |     -     |     -     | data_last |
+| 0x04  | Data          |     -     |     -     |     -     |     -     |     -     |     -     | data_last | data_valid|
 
 | Addr  | Name          |   Bit 7   |   Bit 6   |   Bit 5   |   Bit 4   |   Bit 3   |   Bit 2   |   Bit 1   |   Bit 0   |
 |-------|---------------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|
 | 0x04  | Data          |                                           data[7:0]                                           |
 
 data: I2C data, write to push on write data FIFO, read to pull from read data FIFO
+data_valid: indicates valid read data, must be accessed with atomic 16 bit reads and writes
 data_last: indicate last byte of block write (write_multiple), must be accessed with atomic 16 bit reads and writes
 
 Prescale register:
@@ -498,7 +499,7 @@ always @* begin
 
                         if (wbs_sel_i[1]) begin
                             // only valid with atomic 16 bit write
-                            data_in_last_next = wbs_dat_i[8];
+                            data_in_last_next = wbs_dat_i[9];
                         end else begin
                             data_in_last_next = 1'b0;
                         end
@@ -565,8 +566,9 @@ always @* begin
                 3'h4: begin
                     // data
                     wbs_dat_o_next[7:0] = data_out;
-                    wbs_dat_o_next[8] = data_out_last;
-                    wbs_dat_o_next[15:9] = 7'd0;
+                    wbs_dat_o_next[8] = data_out_valid;
+                    wbs_dat_o_next[9] = data_out_last;
+                    wbs_dat_o_next[15:10] = 6'd0;
 
                     if (wbs_sel_i[0]) begin
                         data_out_ready_next = !wbs_ack_o_reg && data_out_valid;
