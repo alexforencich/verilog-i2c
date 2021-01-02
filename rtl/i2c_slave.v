@@ -41,15 +41,15 @@ module i2c_slave #(
      */
     input  wire        release_bus,
 
-    input  wire [7:0]  data_in,
-    input  wire        data_in_valid,
-    output wire        data_in_ready,
-    input  wire        data_in_last,
+    input  wire [7:0]  s_axis_data_tdata,
+    input  wire        s_axis_data_tvalid,
+    output wire        s_axis_data_tready,
+    input  wire        s_axis_data_tlast,
 
-    output wire [7:0]  data_out,
-    output wire        data_out_valid,
-    input  wire        data_out_ready,
-    output wire        data_out_last,
+    output wire [7:0]  m_axis_data_tdata,
+    output wire        m_axis_data_tvalid,
+    input  wire        m_axis_data_tready,
+    output wire        m_axis_data_tlast,
 
     /*
      * I2C interface
@@ -190,11 +190,11 @@ reg mode_read_reg = 1'b0, mode_read_next;
 
 reg [3:0] bit_count_reg = 4'd0, bit_count_next;
 
-reg data_in_ready_reg = 1'b0, data_in_ready_next;
+reg s_axis_data_tready_reg = 1'b0, s_axis_data_tready_next;
 
-reg [7:0] data_out_reg = 8'd0, data_out_next;
-reg data_out_valid_reg = 1'b0, data_out_valid_next;
-reg data_out_last_reg = 1'b0, data_out_last_next;
+reg [7:0] m_axis_data_tdata_reg = 8'd0, m_axis_data_tdata_next;
+reg m_axis_data_tvalid_reg = 1'b0, m_axis_data_tvalid_next;
+reg m_axis_data_tlast_reg = 1'b0, m_axis_data_tlast_next;
 
 reg [FILTER_LEN-1:0] scl_i_filter = {FILTER_LEN{1'b1}};
 reg [FILTER_LEN-1:0] sda_i_filter = {FILTER_LEN{1'b1}};
@@ -214,11 +214,11 @@ reg bus_addressed_reg = 1'b0, bus_addressed_next;
 
 assign bus_address = addr_reg;
 
-assign data_in_ready = data_in_ready_reg;
+assign s_axis_data_tready = s_axis_data_tready_reg;
 
-assign data_out = data_out_reg;
-assign data_out_valid = data_out_valid_reg;
-assign data_out_last = data_out_last_reg;
+assign m_axis_data_tdata = m_axis_data_tdata_reg;
+assign m_axis_data_tvalid = m_axis_data_tvalid_reg;
+assign m_axis_data_tlast = m_axis_data_tlast_reg;
 
 assign scl_o = scl_o_reg;
 assign scl_t = scl_o_reg;
@@ -250,11 +250,11 @@ always @* begin
 
     bit_count_next = bit_count_reg;
 
-    data_in_ready_next = 1'b0;
+    s_axis_data_tready_next = 1'b0;
 
-    data_out_next = data_out_reg;
-    data_out_valid_next = data_out_valid_reg && !data_out_ready;
-    data_out_last_next = data_out_last_reg;
+    m_axis_data_tdata_next = m_axis_data_tdata_reg;
+    m_axis_data_tvalid_next = m_axis_data_tvalid_reg && !m_axis_data_tready;
+    m_axis_data_tlast_next = m_axis_data_tlast_reg;
 
     scl_o_next = scl_o_reg;
     sda_o_next = sda_o_reg;
@@ -266,16 +266,16 @@ always @* begin
         data_valid_next = 1'b0;
         data_out_reg_valid_next = 1'b0;
         bit_count_next = 4'd7;
-        data_out_last_next = 1'b1;
-        data_out_valid_next = data_out_reg_valid_reg;
+        m_axis_data_tlast_next = 1'b1;
+        m_axis_data_tvalid_next = data_out_reg_valid_reg;
         bus_addressed_next = 1'b0;
         state_next = STATE_ADDRESS;
     end else if (release_bus || stop_bit) begin
         // got stop bit or release bus command, latch out data, return to idle
         data_valid_next = 1'b0;
         data_out_reg_valid_next = 1'b0;
-        data_out_last_next = 1'b1;
-        data_out_valid_next = data_out_reg_valid_reg;
+        m_axis_data_tlast_next = 1'b1;
+        m_axis_data_tvalid_next = data_out_reg_valid_reg;
         bus_addressed_next = 1'b0;
         state_next = STATE_IDLE;
     end else begin
@@ -319,7 +319,7 @@ always @* begin
                     bit_count_next = 4'd7;
                     if (mode_read_reg) begin
                         // reading
-                        data_in_ready_next = 1'b1;
+                        s_axis_data_tready_next = 1'b1;
                         data_valid_next = 1'b0;
                         state_next = STATE_READ_1;
                     end else begin
@@ -334,7 +334,7 @@ always @* begin
                 // write data byte
                 if (scl_negedge || !scl_o_reg) begin
                     sda_o_next = 1'b1;
-                    if (data_out_valid && !data_out_ready) begin
+                    if (m_axis_data_tvalid && !m_axis_data_tready) begin
                         // data waiting in output register, so stretch clock
                         scl_o_next = 1'b0;
                         state_next = STATE_WRITE_1;
@@ -342,8 +342,8 @@ always @* begin
                         scl_o_next = 1'b1;
                         if (data_valid_reg) begin
                             // store data in output register
-                            data_out_next = data_reg;
-                            data_out_last_next = 1'b0;
+                            m_axis_data_tdata_next = data_reg;
+                            m_axis_data_tlast_next = 1'b0;
                         end
                         data_valid_next = 1'b0;
                         data_out_reg_valid_next = data_valid_reg;
@@ -363,7 +363,7 @@ always @* begin
                         state_next = STATE_WRITE_2;
                     end else begin
                         // latch out previous data byte since we now know it's not the last one
-                        data_out_valid_next = data_out_reg_valid_reg;
+                        m_axis_data_tvalid_next = data_out_reg_valid_reg;
                         data_out_reg_valid_next = 1'b0;
                         data_valid_next = 1'b1;
                         state_next = STATE_ACK;
@@ -374,14 +374,14 @@ always @* begin
             end
             STATE_READ_1: begin
                 // read data byte
-                if (data_in_ready && data_in_valid) begin
+                if (s_axis_data_tready && s_axis_data_tvalid) begin
                     // data valid; latch it in
-                    data_in_ready_next = 1'b0;
-                    data_next = data_in;
+                    s_axis_data_tready_next = 1'b0;
+                    data_next = s_axis_data_tdata;
                     data_valid_next = 1'b1;
                 end else begin
                     // keep ready high if we're waiting for data
-                    data_in_ready_next = !data_valid_reg;
+                    s_axis_data_tready_next = !data_valid_reg;
                 end
 
                 if (scl_negedge || !scl_o_reg) begin
@@ -424,7 +424,7 @@ always @* begin
                     end else begin
                         // ACK, read another byte
                         bit_count_next = 4'd7;
-                        data_in_ready_next = 1'b1;
+                        s_axis_data_tready_next = 1'b1;
                         data_valid_next = 1'b0;
                         state_next = STATE_READ_1;
                     end
@@ -449,11 +449,11 @@ always @(posedge clk) begin
 
     bit_count_reg <= bit_count_next;
 
-    data_in_ready_reg <= data_in_ready_next;
+    s_axis_data_tready_reg <= s_axis_data_tready_next;
 
-    data_out_reg <= data_out_next;
-    data_out_valid_reg <= data_out_valid_next;
-    data_out_last_reg <= data_out_last_next;
+    m_axis_data_tdata_reg <= m_axis_data_tdata_next;
+    m_axis_data_tvalid_reg <= m_axis_data_tvalid_next;
+    m_axis_data_tlast_reg <= m_axis_data_tlast_next;
 
     scl_i_filter <= (scl_i_filter << 1) | scl_i;
     sda_i_filter <= (sda_i_filter << 1) | sda_i;
@@ -490,8 +490,8 @@ always @(posedge clk) begin
 
     if (rst) begin
         state_reg <= STATE_IDLE;
-        data_in_ready_reg <= 1'b0;
-        data_out_valid_reg <= 1'b0;
+        s_axis_data_tready_reg <= 1'b0;
+        m_axis_data_tvalid_reg <= 1'b0;
         scl_o_reg <= 1'b1;
         sda_o_reg <= 1'b1;
         busy_reg <= 1'b0;

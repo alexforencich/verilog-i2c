@@ -50,21 +50,21 @@ def bench():
     rst = Signal(bool(0))
     current_test = Signal(intbv(0)[8:])
 
-    cmd_ready = Signal(bool(0))
-    data_out_ready = Signal(bool(0))
+    m_axis_cmd_ready = Signal(bool(0))
+    m_axis_data_tready = Signal(bool(0))
     start = Signal(bool(0))
 
     # Outputs
-    cmd_address = Signal(intbv(0)[7:])
-    cmd_start = Signal(bool(0))
-    cmd_read = Signal(bool(0))
-    cmd_write = Signal(bool(0))
-    cmd_write_multiple = Signal(bool(0))
-    cmd_stop = Signal(bool(0))
-    cmd_valid = Signal(bool(0))
-    data_out = Signal(intbv(0)[8:])
-    data_out_valid = Signal(bool(0))
-    data_out_last = Signal(bool(1))
+    m_axis_cmd_address = Signal(intbv(0)[7:])
+    m_axis_cmd_start = Signal(bool(0))
+    m_axis_cmd_read = Signal(bool(0))
+    m_axis_cmd_write = Signal(bool(0))
+    m_axis_cmd_write_multiple = Signal(bool(0))
+    m_axis_cmd_stop = Signal(bool(0))
+    m_axis_cmd_valid = Signal(bool(0))
+    m_axis_data_tdata = Signal(intbv(0)[8:])
+    m_axis_data_tvalid = Signal(bool(0))
+    m_axis_data_tlast = Signal(bool(1))
     busy = Signal(bool(0))
 
     # sources and sinks
@@ -76,9 +76,9 @@ def bench():
     cmd_sink_logic = cmd_sink.create_logic(
         clk,
         rst,
-        tdata=(cmd_address, cmd_start, cmd_read, cmd_write, cmd_write_multiple, cmd_stop),
-        tvalid=cmd_valid,
-        tready=cmd_ready,
+        tdata=(m_axis_cmd_address, m_axis_cmd_start, m_axis_cmd_read, m_axis_cmd_write, m_axis_cmd_write_multiple, m_axis_cmd_stop),
+        tvalid=m_axis_cmd_valid,
+        tready=m_axis_cmd_ready,
         pause=cmd_sink_pause,
         name='cmd_sink'
     )
@@ -88,10 +88,10 @@ def bench():
     data_sink_logic = data_sink.create_logic(
         clk,
         rst,
-        tdata=data_out,
-        tvalid=data_out_valid,
-        tready=data_out_ready,
-        tlast=data_out_last,
+        tdata=m_axis_data_tdata,
+        tvalid=m_axis_data_tvalid,
+        tready=m_axis_data_tready,
+        tlast=m_axis_data_tlast,
         pause=data_sink_pause,
         name='data_sink'
     )
@@ -105,18 +105,18 @@ def bench():
         clk=clk,
         rst=rst,
         current_test=current_test,
-        cmd_address=cmd_address,
-        cmd_start=cmd_start,
-        cmd_read=cmd_read,
-        cmd_write=cmd_write,
-        cmd_write_multiple=cmd_write_multiple,
-        cmd_stop=cmd_stop,
-        cmd_valid=cmd_valid,
-        cmd_ready=cmd_ready,
-        data_out=data_out,
-        data_out_valid=data_out_valid,
-        data_out_ready=data_out_ready,
-        data_out_last=data_out_last,
+        m_axis_cmd_address=m_axis_cmd_address,
+        m_axis_cmd_start=m_axis_cmd_start,
+        m_axis_cmd_read=m_axis_cmd_read,
+        m_axis_cmd_write=m_axis_cmd_write,
+        m_axis_cmd_write_multiple=m_axis_cmd_write_multiple,
+        m_axis_cmd_stop=m_axis_cmd_stop,
+        m_axis_cmd_valid=m_axis_cmd_valid,
+        m_axis_cmd_ready=m_axis_cmd_ready,
+        m_axis_data_tdata=m_axis_data_tdata,
+        m_axis_data_tvalid=m_axis_data_tvalid,
+        m_axis_data_tready=m_axis_data_tready,
+        m_axis_data_tlast=m_axis_data_tlast,
         busy=busy,
         start=start
     )

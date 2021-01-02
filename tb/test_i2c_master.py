@@ -51,17 +51,17 @@ def bench():
     rst = Signal(bool(0))
     current_test = Signal(intbv(0)[8:])
 
-    cmd_address = Signal(intbv(0)[7:])
-    cmd_start = Signal(bool(0))
-    cmd_read = Signal(bool(0))
-    cmd_write = Signal(bool(0))
-    cmd_write_multiple = Signal(bool(0))
-    cmd_stop = Signal(bool(0))
-    cmd_valid = Signal(bool(0))
-    data_in = Signal(intbv(0)[8:])
-    data_in_valid = Signal(bool(0))
-    data_in_last = Signal(bool(0))
-    data_out_ready = Signal(bool(0))
+    s_axis_cmd_address = Signal(intbv(0)[7:])
+    s_axis_cmd_start = Signal(bool(0))
+    s_axis_cmd_read = Signal(bool(0))
+    s_axis_cmd_write = Signal(bool(0))
+    s_axis_cmd_write_multiple = Signal(bool(0))
+    s_axis_cmd_stop = Signal(bool(0))
+    s_axis_cmd_valid = Signal(bool(0))
+    s_axis_data_tdata = Signal(intbv(0)[8:])
+    s_axis_data_tvalid = Signal(bool(0))
+    s_axis_data_tlast = Signal(bool(0))
+    m_axis_data_tready = Signal(bool(0))
     scl_i = Signal(bool(1))
     sda_i = Signal(bool(1))
     prescale = Signal(intbv(0)[16:])
@@ -74,11 +74,11 @@ def bench():
     s2_sda_i = Signal(bool(1))
 
     # Outputs
-    cmd_ready = Signal(bool(0))
-    data_in_ready = Signal(bool(0))
-    data_out = Signal(intbv(0)[8:])
-    data_out_valid = Signal(bool(0))
-    data_out_last = Signal(bool(0))
+    s_axis_cmd_ready = Signal(bool(0))
+    s_axis_data_tready = Signal(bool(0))
+    m_axis_data_tdata = Signal(intbv(0)[8:])
+    m_axis_data_tvalid = Signal(bool(0))
+    m_axis_data_tlast = Signal(bool(0))
     scl_o = Signal(bool(1))
     scl_t = Signal(bool(1))
     sda_o = Signal(bool(1))
@@ -108,9 +108,9 @@ def bench():
     cmd_source_logic = cmd_source.create_logic(
         clk,
         rst,
-        tdata=(cmd_address, cmd_start, cmd_read, cmd_write, cmd_write_multiple, cmd_stop),
-        tvalid=cmd_valid,
-        tready=cmd_ready,
+        tdata=(s_axis_cmd_address, s_axis_cmd_start, s_axis_cmd_read, s_axis_cmd_write, s_axis_cmd_write_multiple, s_axis_cmd_stop),
+        tvalid=s_axis_cmd_valid,
+        tready=s_axis_cmd_ready,
         pause=cmd_source_pause,
         name='cmd_source'
     )
@@ -120,10 +120,10 @@ def bench():
     data_source_logic = data_source.create_logic(
         clk,
         rst,
-        tdata=data_in,
-        tvalid=data_in_valid,
-        tready=data_in_ready,
-        tlast=data_in_last,
+        tdata=s_axis_data_tdata,
+        tvalid=s_axis_data_tvalid,
+        tready=s_axis_data_tready,
+        tlast=s_axis_data_tlast,
         pause=data_source_pause,
         name='data_source'
     )
@@ -133,10 +133,10 @@ def bench():
     data_sink_logic = data_sink.create_logic(
         clk,
         rst,
-        tdata=data_out,
-        tvalid=data_out_valid,
-        tready=data_out_ready,
-        tlast=data_out_last,
+        tdata=m_axis_data_tdata,
+        tvalid=m_axis_data_tvalid,
+        tready=m_axis_data_tready,
+        tlast=m_axis_data_tlast,
         pause=data_sink_pause,
         name='data_sink'
     )
@@ -183,24 +183,24 @@ def bench():
         rst=rst,
         current_test=current_test,
 
-        cmd_address=cmd_address,
-        cmd_start=cmd_start,
-        cmd_read=cmd_read,
-        cmd_write=cmd_write,
-        cmd_write_multiple=cmd_write_multiple,
-        cmd_stop=cmd_stop,
-        cmd_valid=cmd_valid,
-        cmd_ready=cmd_ready,
+        s_axis_cmd_address=s_axis_cmd_address,
+        s_axis_cmd_start=s_axis_cmd_start,
+        s_axis_cmd_read=s_axis_cmd_read,
+        s_axis_cmd_write=s_axis_cmd_write,
+        s_axis_cmd_write_multiple=s_axis_cmd_write_multiple,
+        s_axis_cmd_stop=s_axis_cmd_stop,
+        s_axis_cmd_valid=s_axis_cmd_valid,
+        s_axis_cmd_ready=s_axis_cmd_ready,
 
-        data_in=data_in,
-        data_in_valid=data_in_valid,
-        data_in_ready=data_in_ready,
-        data_in_last=data_in_last,
+        s_axis_data_tdata=s_axis_data_tdata,
+        s_axis_data_tvalid=s_axis_data_tvalid,
+        s_axis_data_tready=s_axis_data_tready,
+        s_axis_data_tlast=s_axis_data_tlast,
 
-        data_out=data_out,
-        data_out_valid=data_out_valid,
-        data_out_ready=data_out_ready,
-        data_out_last=data_out_last,
+        m_axis_data_tdata=m_axis_data_tdata,
+        m_axis_data_tvalid=m_axis_data_tvalid,
+        m_axis_data_tready=m_axis_data_tready,
+        m_axis_data_tlast=m_axis_data_tlast,
 
         scl_i=scl_i,
         scl_o=scl_o,

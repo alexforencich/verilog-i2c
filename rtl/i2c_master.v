@@ -36,24 +36,24 @@ module i2c_master (
     /*
      * Host interface
      */
-    input  wire [6:0]  cmd_address,
-    input  wire        cmd_start,
-    input  wire        cmd_read,
-    input  wire        cmd_write,
-    input  wire        cmd_write_multiple,
-    input  wire        cmd_stop,
-    input  wire        cmd_valid,
-    output wire        cmd_ready,
+    input  wire [6:0]  s_axis_cmd_address,
+    input  wire        s_axis_cmd_start,
+    input  wire        s_axis_cmd_read,
+    input  wire        s_axis_cmd_write,
+    input  wire        s_axis_cmd_write_multiple,
+    input  wire        s_axis_cmd_stop,
+    input  wire        s_axis_cmd_valid,
+    output wire        s_axis_cmd_ready,
 
-    input  wire [7:0]  data_in,
-    input  wire        data_in_valid,
-    output wire        data_in_ready,
-    input  wire        data_in_last,
+    input  wire [7:0]  s_axis_data_tdata,
+    input  wire        s_axis_data_tvalid,
+    output wire        s_axis_data_tready,
+    input  wire        s_axis_data_tlast,
 
-    output wire [7:0]  data_out,
-    output wire        data_out_valid,
-    input  wire        data_out_ready,
-    output wire        data_out_last,
+    output wire [7:0]  m_axis_data_tdata,
+    output wire        m_axis_data_tvalid,
+    input  wire        m_axis_data_tready,
+    output wire        m_axis_data_tlast,
 
     /*
      * I2C interface
@@ -103,7 +103,7 @@ read
     set start to force generation of a start condition
     start is implied when bus is inactive or active with write or different address
     set stop to issue a stop condition after reading current byte
-    if stop is set with read command, then data_out_last will be set
+    if stop is set with read command, then m_axis_data_tlast will be set
 
 write
     write data byte
@@ -112,7 +112,7 @@ write
     set stop to issue a stop condition after writing current byte
 
 write multiple
-    write multiple data bytes (until data_in_last)
+    write multiple data bytes (until s_axis_data_tlast)
     set start to force generation of a start condition
     start is implied when bus is inactive or active with read or different address
     set stop to issue a stop condition after writing block
@@ -242,13 +242,13 @@ reg delay_sda_reg = 1'b0, delay_sda_next;
 
 reg [3:0] bit_count_reg = 4'd0, bit_count_next;
 
-reg cmd_ready_reg = 1'b0, cmd_ready_next;
+reg s_axis_cmd_ready_reg = 1'b0, s_axis_cmd_ready_next;
 
-reg data_in_ready_reg = 1'b0, data_in_ready_next;
+reg s_axis_data_tready_reg = 1'b0, s_axis_data_tready_next;
 
-reg [7:0] data_out_reg = 8'd0, data_out_next;
-reg data_out_valid_reg = 1'b0, data_out_valid_next;
-reg data_out_last_reg = 1'b0, data_out_last_next;
+reg [7:0] m_axis_data_tdata_reg = 8'd0, m_axis_data_tdata_next;
+reg m_axis_data_tvalid_reg = 1'b0, m_axis_data_tvalid_next;
+reg m_axis_data_tlast_reg = 1'b0, m_axis_data_tlast_next;
 
 reg scl_i_reg = 1'b1;
 reg sda_i_reg = 1'b1;
@@ -264,13 +264,13 @@ reg bus_active_reg = 1'b0;
 reg bus_control_reg = 1'b0, bus_control_next;
 reg missed_ack_reg = 1'b0, missed_ack_next;
 
-assign cmd_ready = cmd_ready_reg;
+assign s_axis_cmd_ready = s_axis_cmd_ready_reg;
 
-assign data_in_ready = data_in_ready_reg;
+assign s_axis_data_tready = s_axis_data_tready_reg;
 
-assign data_out = data_out_reg;
-assign data_out_valid = data_out_valid_reg;
-assign data_out_last = data_out_last_reg;
+assign m_axis_data_tdata = m_axis_data_tdata_reg;
+assign m_axis_data_tvalid = m_axis_data_tvalid_reg;
+assign m_axis_data_tlast = m_axis_data_tlast_reg;
 
 assign scl_o = scl_o_reg;
 assign scl_t = scl_o_reg;
@@ -310,13 +310,13 @@ always @* begin
 
     bit_count_next = bit_count_reg;
 
-    cmd_ready_next = 1'b0;
+    s_axis_cmd_ready_next = 1'b0;
 
-    data_in_ready_next = 1'b0;
+    s_axis_data_tready_next = 1'b0;
 
-    data_out_next = data_out_reg;
-    data_out_valid_next = data_out_valid_reg & ~data_out_ready;
-    data_out_last_next = data_out_last_reg;
+    m_axis_data_tdata_next = m_axis_data_tdata_reg;
+    m_axis_data_tvalid_next = m_axis_data_tvalid_reg & ~m_axis_data_tready;
+    m_axis_data_tlast_next = m_axis_data_tlast_reg;
 
     missed_ack_next = 1'b0;
 
@@ -329,18 +329,18 @@ always @* begin
         case (state_reg)
             STATE_IDLE: begin
                 // line idle
-                cmd_ready_next = 1'b1;
+                s_axis_cmd_ready_next = 1'b1;
 
-                if (cmd_ready & cmd_valid) begin
+                if (s_axis_cmd_ready & s_axis_cmd_valid) begin
                     // command valid
-                    if (cmd_read ^ (cmd_write | cmd_write_multiple)) begin
+                    if (s_axis_cmd_read ^ (s_axis_cmd_write | s_axis_cmd_write_multiple)) begin
                         // read or write command
-                        addr_next = cmd_address;
-                        mode_read_next = cmd_read;
-                        mode_write_multiple_next = cmd_write_multiple;
-                        mode_stop_next = cmd_stop;
+                        addr_next = s_axis_cmd_address;
+                        mode_read_next = s_axis_cmd_read;
+                        mode_write_multiple_next = s_axis_cmd_write_multiple;
+                        mode_stop_next = s_axis_cmd_stop;
 
-                        cmd_ready_next = 1'b0;
+                        s_axis_cmd_ready_next = 1'b0;
 
                         // start bit
                         if (bus_active) begin
@@ -360,20 +360,20 @@ always @* begin
             end
             STATE_ACTIVE_WRITE: begin
                 // line active with current address and read/write mode
-                cmd_ready_next = 1'b1;
+                s_axis_cmd_ready_next = 1'b1;
 
-                if (cmd_ready & cmd_valid) begin
+                if (s_axis_cmd_ready & s_axis_cmd_valid) begin
                     // command valid
-                    if (cmd_read ^ (cmd_write | cmd_write_multiple)) begin
+                    if (s_axis_cmd_read ^ (s_axis_cmd_write | s_axis_cmd_write_multiple)) begin
                         // read or write command
-                        addr_next = cmd_address;
-                        mode_read_next = cmd_read;
-                        mode_write_multiple_next = cmd_write_multiple;
-                        mode_stop_next = cmd_stop;
+                        addr_next = s_axis_cmd_address;
+                        mode_read_next = s_axis_cmd_read;
+                        mode_write_multiple_next = s_axis_cmd_write_multiple;
+                        mode_stop_next = s_axis_cmd_stop;
 
-                        cmd_ready_next = 1'b0;
+                        s_axis_cmd_ready_next = 1'b0;
                         
-                        if (cmd_start || cmd_address != addr_reg || cmd_read) begin
+                        if (s_axis_cmd_start || s_axis_cmd_address != addr_reg || s_axis_cmd_read) begin
                             // address or mode mismatch or forced start - repeated start
 
                             // repeated start bit
@@ -384,10 +384,10 @@ always @* begin
                             // address and mode match
 
                             // start write
-                            data_in_ready_next = 1'b1;
+                            s_axis_data_tready_next = 1'b1;
                             state_next = STATE_WRITE_1;
                         end
-                    end else if (cmd_stop && !(cmd_read || cmd_write || cmd_write_multiple)) begin
+                    end else if (s_axis_cmd_stop && !(s_axis_cmd_read || s_axis_cmd_write || s_axis_cmd_write_multiple)) begin
                         // stop command
                         phy_stop_bit = 1'b1;
                         state_next = STATE_IDLE;
@@ -396,7 +396,7 @@ always @* begin
                         state_next = STATE_ACTIVE_WRITE;
                     end
                 end else begin
-                    if (stop_on_idle & cmd_ready & ~cmd_valid) begin
+                    if (stop_on_idle & s_axis_cmd_ready & ~s_axis_cmd_valid) begin
                         // no waiting command and stop_on_idle selected, issue stop condition
                         phy_stop_bit = 1'b1;
                         state_next = STATE_IDLE;
@@ -407,20 +407,20 @@ always @* begin
             end
             STATE_ACTIVE_READ: begin
                 // line active to current address
-                cmd_ready_next = ~data_out_valid;
+                s_axis_cmd_ready_next = ~m_axis_data_tvalid;
 
-                if (cmd_ready & cmd_valid) begin
+                if (s_axis_cmd_ready & s_axis_cmd_valid) begin
                     // command valid
-                    if (cmd_read ^ (cmd_write | cmd_write_multiple)) begin
+                    if (s_axis_cmd_read ^ (s_axis_cmd_write | s_axis_cmd_write_multiple)) begin
                         // read or write command
-                        addr_next = cmd_address;
-                        mode_read_next = cmd_read;
-                        mode_write_multiple_next = cmd_write_multiple;
-                        mode_stop_next = cmd_stop;
+                        addr_next = s_axis_cmd_address;
+                        mode_read_next = s_axis_cmd_read;
+                        mode_write_multiple_next = s_axis_cmd_write_multiple;
+                        mode_stop_next = s_axis_cmd_stop;
 
-                        cmd_ready_next = 1'b0;
+                        s_axis_cmd_ready_next = 1'b0;
                         
-                        if (cmd_start || cmd_address != addr_reg || cmd_write) begin
+                        if (s_axis_cmd_start || s_axis_cmd_address != addr_reg || s_axis_cmd_write) begin
                             // address or mode mismatch or forced start - repeated start
 
                             // write nack for previous read
@@ -439,7 +439,7 @@ always @* begin
                             data_next = 8'd0;
                             state_next = STATE_READ;
                         end
-                    end else if (cmd_stop && !(cmd_read || cmd_write || cmd_write_multiple)) begin
+                    end else if (s_axis_cmd_stop && !(s_axis_cmd_read || s_axis_cmd_write || s_axis_cmd_write_multiple)) begin
                         // stop command
                         // write nack for previous read
                         phy_write_bit = 1'b1;
@@ -451,7 +451,7 @@ always @* begin
                         state_next = STATE_ACTIVE_READ;
                     end
                 end else begin
-                    if (stop_on_idle & cmd_ready & ~cmd_valid) begin
+                    if (stop_on_idle & s_axis_cmd_ready & ~s_axis_cmd_valid) begin
                         // no waiting command and stop_on_idle selected, issue stop condition
                         // write ack for previous read
                         phy_write_bit = 1'b1;
@@ -512,19 +512,19 @@ always @* begin
                     state_next = STATE_READ;
                 end else begin
                     // start write
-                    data_in_ready_next = 1'b1;
+                    s_axis_data_tready_next = 1'b1;
                     state_next = STATE_WRITE_1;
                 end
             end
             STATE_WRITE_1: begin
-                data_in_ready_next = 1'b1;
+                s_axis_data_tready_next = 1'b1;
 
-                if (data_in_ready & data_in_valid) begin
+                if (s_axis_data_tready & s_axis_data_tvalid) begin
                     // got data, start write
-                    data_next = data_in;
-                    last_next = data_in_last;
+                    data_next = s_axis_data_tdata;
+                    last_next = s_axis_data_tlast;
                     bit_count_next = 4'd8;
-                    data_in_ready_next = 1'b0;
+                    s_axis_data_tready_next = 1'b0;
                     state_next = STATE_WRITE_2;
                 end else begin
                     // wait for data
@@ -572,12 +572,12 @@ always @* begin
                     state_next = STATE_READ;
                 end else begin
                     // output data word
-                    data_out_next = data_next;
-                    data_out_valid_next = 1'b1;
-                    data_out_last_next = 1'b0;
+                    m_axis_data_tdata_next = data_next;
+                    m_axis_data_tvalid_next = 1'b1;
+                    m_axis_data_tlast_next = 1'b0;
                     if (mode_stop_reg) begin
                         // send nack and stop
-                        data_out_last_next = 1'b1;
+                        m_axis_data_tlast_next = 1'b1;
                         phy_write_bit = 1'b1;
                         phy_tx_data = 1'b1;
                         state_next = STATE_STOP;
@@ -846,13 +846,13 @@ always @(posedge clk) begin
 
     bit_count_reg <= bit_count_next;
 
-    cmd_ready_reg <= cmd_ready_next;
+    s_axis_cmd_ready_reg <= s_axis_cmd_ready_next;
 
-    data_in_ready_reg <= data_in_ready_next;
+    s_axis_data_tready_reg <= s_axis_data_tready_next;
 
-    data_out_reg <= data_out_next;
-    data_out_last_reg <= data_out_last_next;
-    data_out_valid_reg <= data_out_valid_next;
+    m_axis_data_tdata_reg <= m_axis_data_tdata_next;
+    m_axis_data_tlast_reg <= m_axis_data_tlast_next;
+    m_axis_data_tvalid_reg <= m_axis_data_tvalid_next;
 
     scl_i_reg <= scl_i;
     sda_i_reg <= sda_i;
@@ -882,9 +882,9 @@ always @(posedge clk) begin
         delay_reg <= 16'd0;
         delay_scl_reg <= 1'b0;
         delay_sda_reg <= 1'b0;
-        cmd_ready_reg <= 1'b0;
-        data_in_ready_reg <= 1'b0;
-        data_out_valid_reg <= 1'b0;
+        s_axis_cmd_ready_reg <= 1'b0;
+        s_axis_data_tready_reg <= 1'b0;
+        m_axis_data_tvalid_reg <= 1'b0;
         scl_o_reg <= 1'b1;
         sda_o_reg <= 1'b1;
         busy_reg <= 1'b0;

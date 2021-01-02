@@ -38,28 +38,28 @@ reg clk = 0;
 reg rst = 0;
 reg [7:0] current_test = 0;
 
-reg [6:0] cmd_address = 0;
-reg cmd_start = 0;
-reg cmd_read = 0;
-reg cmd_write = 0;
-reg cmd_write_multiple = 0;
-reg cmd_stop = 0;
-reg cmd_valid = 0;
-reg [7:0] data_in = 0;
-reg data_in_valid = 0;
-reg data_in_last = 0;
-reg data_out_ready = 0;
+reg [6:0] s_axis_cmd_address = 0;
+reg s_axis_cmd_start = 0;
+reg s_axis_cmd_read = 0;
+reg s_axis_cmd_write = 0;
+reg s_axis_cmd_write_multiple = 0;
+reg s_axis_cmd_stop = 0;
+reg s_axis_cmd_valid = 0;
+reg [7:0] s_axis_data_tdata = 0;
+reg s_axis_data_tvalid = 0;
+reg s_axis_data_tlast = 0;
+reg m_axis_data_tready = 0;
 reg scl_i = 1;
 reg sda_i = 1;
 reg [15:0] prescale = 0;
 reg stop_on_idle = 0;
 
 // Outputs
-wire cmd_ready;
-wire data_in_ready;
-wire [7:0] data_out;
-wire data_out_valid;
-wire data_out_last;
+wire s_axis_cmd_ready;
+wire s_axis_data_tready;
+wire [7:0] m_axis_data_tdata;
+wire m_axis_data_tvalid;
+wire m_axis_data_tlast;
 wire scl_o;
 wire scl_t;
 wire sda_o;
@@ -75,28 +75,28 @@ initial begin
         clk,
         rst,
         current_test,
-        cmd_address,
-        cmd_start,
-        cmd_read,
-        cmd_write,
-        cmd_write_multiple,
-        cmd_stop,
-        cmd_valid,
-        data_in,
-        data_in_valid,
-        data_in_last,
-        data_out_ready,
+        s_axis_cmd_address,
+        s_axis_cmd_start,
+        s_axis_cmd_read,
+        s_axis_cmd_write,
+        s_axis_cmd_write_multiple,
+        s_axis_cmd_stop,
+        s_axis_cmd_valid,
+        s_axis_data_tdata,
+        s_axis_data_tvalid,
+        s_axis_data_tlast,
+        m_axis_data_tready,
         scl_i,
         sda_i,
         prescale,
         stop_on_idle
     );
     $to_myhdl(
-        cmd_ready,
-        data_in_ready,
-        data_out,
-        data_out_valid,
-        data_out_last,
+        s_axis_cmd_ready,
+        s_axis_data_tready,
+        m_axis_data_tdata,
+        m_axis_data_tvalid,
+        m_axis_data_tlast,
         scl_o,
         scl_t,
         sda_o,
@@ -116,22 +116,22 @@ i2c_master
 UUT (
     .clk(clk),
     .rst(rst),
-    .cmd_address(cmd_address),
-    .cmd_start(cmd_start),
-    .cmd_read(cmd_read),
-    .cmd_write(cmd_write),
-    .cmd_write_multiple(cmd_write_multiple),
-    .cmd_stop(cmd_stop),
-    .cmd_valid(cmd_valid),
-    .cmd_ready(cmd_ready),
-    .data_in(data_in),
-    .data_in_valid(data_in_valid),
-    .data_in_ready(data_in_ready),
-    .data_in_last(data_in_last),
-    .data_out(data_out),
-    .data_out_valid(data_out_valid),
-    .data_out_ready(data_out_ready),
-    .data_out_last(data_out_last),
+    .s_axis_cmd_address(s_axis_cmd_address),
+    .s_axis_cmd_start(s_axis_cmd_start),
+    .s_axis_cmd_read(s_axis_cmd_read),
+    .s_axis_cmd_write(s_axis_cmd_write),
+    .s_axis_cmd_write_multiple(s_axis_cmd_write_multiple),
+    .s_axis_cmd_stop(s_axis_cmd_stop),
+    .s_axis_cmd_valid(s_axis_cmd_valid),
+    .s_axis_cmd_ready(s_axis_cmd_ready),
+    .s_axis_data_tdata(s_axis_data_tdata),
+    .s_axis_data_tvalid(s_axis_data_tvalid),
+    .s_axis_data_tready(s_axis_data_tready),
+    .s_axis_data_tlast(s_axis_data_tlast),
+    .m_axis_data_tdata(m_axis_data_tdata),
+    .m_axis_data_tvalid(m_axis_data_tvalid),
+    .m_axis_data_tready(m_axis_data_tready),
+    .m_axis_data_tlast(m_axis_data_tlast),
     .scl_i(scl_i),
     .scl_o(scl_o),
     .scl_t(scl_t),

@@ -476,15 +476,15 @@ i2c_slave_inst (
     // Host interface
     .release_bus(1'b0),
 
-    .data_in(data_in_reg),
-    .data_in_valid(data_in_valid_reg),
-    .data_in_ready(data_in_ready),
-    .data_in_last(1'b0),
+    .s_axis_data_tdata(data_in_reg),
+    .s_axis_data_tvalid(data_in_valid_reg),
+    .s_axis_data_tready(data_in_ready),
+    .s_axis_data_tlast(1'b0),
 
-    .data_out(data_out),
-    .data_out_valid(data_out_valid),
-    .data_out_ready(data_out_ready_reg),
-    .data_out_last(data_out_last),
+    .m_axis_data_tdata(data_out),
+    .m_axis_data_tvalid(data_out_valid),
+    .m_axis_data_tready(data_out_ready_reg),
+    .m_axis_data_tlast(data_out_last),
 
     // I2C Interface
     .scl_i(i2c_scl_i),

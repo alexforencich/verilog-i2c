@@ -38,21 +38,21 @@ reg clk = 0;
 reg rst = 0;
 reg [7:0] current_test = 0;
 
-reg cmd_ready = 0;
-reg data_out_ready = 0;
+reg m_axis_cmd_ready = 0;
+reg m_axis_data_tready = 0;
 reg start = 0;
 
 // Outputs
-wire [6:0] cmd_address;
-wire cmd_start;
-wire cmd_read;
-wire cmd_write;
-wire cmd_write_multiple;
-wire cmd_stop;
-wire cmd_valid;
-wire [7:0] data_out;
-wire data_out_valid;
-wire data_out_last;
+wire [6:0] m_axis_cmd_address;
+wire m_axis_cmd_start;
+wire m_axis_cmd_read;
+wire m_axis_cmd_write;
+wire m_axis_cmd_write_multiple;
+wire m_axis_cmd_stop;
+wire m_axis_cmd_valid;
+wire [7:0] m_axis_data_tdata;
+wire m_axis_data_tvalid;
+wire m_axis_data_tlast;
 wire busy;
 
 initial begin
@@ -61,20 +61,20 @@ initial begin
         clk,
         rst,
         current_test,
-        cmd_ready,
-        data_out_ready,
+        m_axis_cmd_ready,
+        m_axis_data_tready,
         start);
     $to_myhdl(
-        cmd_address,
-        cmd_start,
-        cmd_read,
-        cmd_write,
-        cmd_write_multiple,
-        cmd_stop,
-        cmd_valid,
-        data_out,
-        data_out_valid,
-        data_out_last,
+        m_axis_cmd_address,
+        m_axis_cmd_start,
+        m_axis_cmd_read,
+        m_axis_cmd_write,
+        m_axis_cmd_write_multiple,
+        m_axis_cmd_stop,
+        m_axis_cmd_valid,
+        m_axis_data_tdata,
+        m_axis_data_tvalid,
+        m_axis_data_tlast,
         busy
     );
 
@@ -87,18 +87,18 @@ i2c_init
 UUT (
     .clk(clk),
     .rst(rst),
-    .cmd_address(cmd_address),
-    .cmd_start(cmd_start),
-    .cmd_read(cmd_read),
-    .cmd_write(cmd_write),
-    .cmd_write_multiple(cmd_write_multiple),
-    .cmd_stop(cmd_stop),
-    .cmd_valid(cmd_valid),
-    .cmd_ready(cmd_ready),
-    .data_out(data_out),
-    .data_out_valid(data_out_valid),
-    .data_out_ready(data_out_ready),
-    .data_out_last(data_out_last),
+    .m_axis_cmd_address(m_axis_cmd_address),
+    .m_axis_cmd_start(m_axis_cmd_start),
+    .m_axis_cmd_read(m_axis_cmd_read),
+    .m_axis_cmd_write(m_axis_cmd_write),
+    .m_axis_cmd_write_multiple(m_axis_cmd_write_multiple),
+    .m_axis_cmd_stop(m_axis_cmd_stop),
+    .m_axis_cmd_valid(m_axis_cmd_valid),
+    .m_axis_cmd_ready(m_axis_cmd_ready),
+    .m_axis_data_tdata(m_axis_data_tdata),
+    .m_axis_data_tvalid(m_axis_data_tvalid),
+    .m_axis_data_tready(m_axis_data_tready),
+    .m_axis_data_tlast(m_axis_data_tlast),
     .busy(busy),
     .start(start)
 );
