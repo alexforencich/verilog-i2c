@@ -585,6 +585,30 @@ always @* begin
 end
 
 always @(posedge clk) begin
+    wbs_dat_o_reg <= wbs_dat_o_next;
+    wbs_ack_o_reg <= wbs_ack_o_next;
+
+    cmd_address_reg <= cmd_address_next;
+    cmd_start_reg <= cmd_start_next;
+    cmd_read_reg <= cmd_read_next;
+    cmd_write_reg <= cmd_write_next;
+    cmd_write_multiple_reg <= cmd_write_multiple_next;
+    cmd_stop_reg <= cmd_stop_next;
+    cmd_valid_reg <= cmd_valid_next;
+
+    data_in_reg <= data_in_next;
+    data_in_valid_reg <= data_in_valid_next;
+    data_in_last_reg <= data_in_last_next;
+
+    data_out_ready_reg <= data_out_ready_next;
+
+    prescale_reg <= prescale_next;
+
+    missed_ack_reg <= missed_ack_next;
+
+    cmd_fifo_overflow_reg <= cmd_fifo_overflow_next;
+    write_fifo_overflow_reg <= write_fifo_overflow_next;
+
     if (rst) begin
         wbs_ack_o_reg <= 1'b0;
         cmd_valid_reg <= 1'b0;
@@ -594,28 +618,7 @@ always @(posedge clk) begin
         missed_ack_reg <= 1'b0;
         cmd_fifo_overflow_reg <= 0;
         write_fifo_overflow_reg <= 0;
-    end else begin
-        wbs_ack_o_reg <= wbs_ack_o_next;
-        cmd_valid_reg <= cmd_valid_next;
-        data_in_valid_reg <= data_in_valid_next;
-        data_out_ready_reg <= data_out_ready_next;
-        prescale_reg <= prescale_next;
-        missed_ack_reg <= missed_ack_next;
-        cmd_fifo_overflow_reg <= cmd_fifo_overflow_next;
-        write_fifo_overflow_reg <= write_fifo_overflow_next;
     end
-
-    wbs_dat_o_reg <= wbs_dat_o_next;
-
-    cmd_address_reg <= cmd_address_next;
-    cmd_start_reg <= cmd_start_next;
-    cmd_read_reg <= cmd_read_next;
-    cmd_write_reg <= cmd_write_next;
-    cmd_write_multiple_reg <= cmd_write_multiple_next;
-    cmd_stop_reg <= cmd_stop_next;
-    
-    data_in_reg <= data_in_next;
-    data_in_last_reg <= data_in_last_next;
 end
 
 i2c_master

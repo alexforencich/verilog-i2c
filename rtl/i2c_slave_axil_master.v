@@ -428,6 +428,31 @@ always @* begin
 end
 
 always @(posedge clk) begin
+    state_reg <= state_next;
+
+    count_reg <= count_next;
+
+    if (data_out_ready_reg & data_out_valid) begin
+        last_cycle_reg <= data_out_last;
+    end
+
+    addr_reg <= addr_next;
+    data_reg <= data_next;
+
+    m_axil_awvalid_reg <= m_axil_awvalid_next;
+    m_axil_wstrb_reg <= m_axil_wstrb_next;
+    m_axil_wvalid_reg <= m_axil_wvalid_next;
+    m_axil_bready_reg <= m_axil_bready_next;
+    m_axil_arvalid_reg <= m_axil_arvalid_next;
+    m_axil_rready_reg <= m_axil_rready_next;
+
+    busy_reg <= state_next != STATE_IDLE;
+
+    data_in_reg <= data_in_next;
+    data_in_valid_reg <= data_in_valid_next;
+
+    data_out_ready_reg <= data_out_ready_next;
+
     if (rst) begin
         state_reg <= STATE_IDLE;
         data_in_valid_reg <= 1'b0;
@@ -438,30 +463,7 @@ always @(posedge clk) begin
         m_axil_arvalid_reg <= 1'b0;
         m_axil_rready_reg <= 1'b0;
         busy_reg <= 1'b0;
-    end else begin
-        state_reg <= state_next;
-        data_in_valid_reg <= data_in_valid_next;
-        data_out_ready_reg <= data_out_ready_next;
-        m_axil_awvalid_reg <= m_axil_awvalid_next;
-        m_axil_wvalid_reg <= m_axil_wvalid_next;
-        m_axil_bready_reg <= m_axil_bready_next;
-        m_axil_arvalid_reg <= m_axil_arvalid_next;
-        m_axil_rready_reg <= m_axil_rready_next;
-        busy_reg <= state_next != STATE_IDLE;
     end
-
-    count_reg <= count_next;
-
-    data_in_reg <= data_in_next;
-
-    if (data_out_ready_reg & data_out_valid) begin
-        last_cycle_reg <= data_out_last;
-    end
-
-    addr_reg <= addr_next;
-    data_reg <= data_next;
-
-    m_axil_wstrb_reg <= m_axil_wstrb_next;
 end
 
 i2c_slave #(

@@ -437,36 +437,7 @@ always @* begin
 end
 
 always @(posedge clk) begin
-    if (rst) begin
-        state_reg <= STATE_IDLE;
-        data_in_ready_reg <= 1'b0;
-        data_out_valid_reg <= 1'b0;
-        scl_o_reg <= 1'b1;
-        sda_o_reg <= 1'b1;
-        busy_reg <= 1'b0;
-        bus_active_reg <= 1'b0;
-        bus_addressed_reg <= 1'b0;
-    end else begin
-        state_reg <= state_next;
-
-        data_in_ready_reg <= data_in_ready_next;
-        data_out_valid_reg <= data_out_valid_next;
-
-        scl_o_reg <= scl_o_next;
-        sda_o_reg <= sda_o_next;
-
-        busy_reg <= !(state_reg == STATE_IDLE);
-
-        if (start_bit) begin
-            bus_active_reg <= 1'b1;
-        end else if (stop_bit) begin
-            bus_active_reg <= 1'b0;
-        end else begin
-            bus_active_reg <= bus_active_reg;
-        end
-
-        bus_addressed_reg <= bus_addressed_next;
-    end
+    state_reg <= state_next;
 
     addr_reg <= addr_next;
     data_reg <= data_next;
@@ -478,7 +449,10 @@ always @(posedge clk) begin
 
     bit_count_reg <= bit_count_next;
 
+    data_in_ready_reg <= data_in_ready_next;
+
     data_out_reg <= data_out_next;
+    data_out_valid_reg <= data_out_valid_next;
     data_out_last_reg <= data_out_last_next;
 
     scl_i_filter <= (scl_i_filter << 1) | scl_i;
@@ -496,8 +470,34 @@ always @(posedge clk) begin
         sda_i_reg <= 1'b0;
     end
 
+    scl_o_reg <= scl_o_next;
+    sda_o_reg <= sda_o_next;
+
     last_scl_i_reg <= scl_i_reg;
     last_sda_i_reg <= sda_i_reg;
+
+    busy_reg <= !(state_reg == STATE_IDLE);
+
+    if (start_bit) begin
+        bus_active_reg <= 1'b1;
+    end else if (stop_bit) begin
+        bus_active_reg <= 1'b0;
+    end else begin
+        bus_active_reg <= bus_active_reg;
+    end
+
+    bus_addressed_reg <= bus_addressed_next;
+
+    if (rst) begin
+        state_reg <= STATE_IDLE;
+        data_in_ready_reg <= 1'b0;
+        data_out_valid_reg <= 1'b0;
+        scl_o_reg <= 1'b1;
+        sda_o_reg <= 1'b1;
+        busy_reg <= 1'b0;
+        bus_active_reg <= 1'b0;
+        bus_addressed_reg <= 1'b0;
+    end
 end
 
 endmodule

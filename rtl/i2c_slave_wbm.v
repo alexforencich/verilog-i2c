@@ -416,25 +416,9 @@ always @* begin
 end
 
 always @(posedge clk) begin
-    if (rst) begin
-        state_reg <= STATE_IDLE;
-        data_in_valid_reg <= 1'b0;
-        data_out_ready_reg <= 1'b0;
-        wb_stb_o_reg <= 1'b0;
-        wb_cyc_o_reg <= 1'b0;
-        busy_reg <= 1'b0;
-    end else begin
-        state_reg <= state_next;
-        data_in_valid_reg <= data_in_valid_next;
-        data_out_ready_reg <= data_out_ready_next;
-        wb_stb_o_reg <= wb_stb_o_next;
-        wb_cyc_o_reg <= wb_cyc_o_next;
-        busy_reg <= state_next != STATE_IDLE;
-    end
+    state_reg <= state_next;
 
     count_reg <= count_next;
-
-    data_in_reg <= data_in_next;
 
     if (data_out_ready_reg & data_out_valid) begin
         last_cycle_reg <= data_out_last;
@@ -445,6 +429,24 @@ always @(posedge clk) begin
 
     wb_we_o_reg <= wb_we_o_next;
     wb_sel_o_reg <= wb_sel_o_next;
+    wb_stb_o_reg <= wb_stb_o_next;
+    wb_cyc_o_reg <= wb_cyc_o_next;
+
+    busy_reg <= state_next != STATE_IDLE;
+
+    data_in_reg <= data_in_next;
+    data_in_valid_reg <= data_in_valid_next;
+
+    data_out_ready_reg <= data_out_ready_next;
+
+    if (rst) begin
+        state_reg <= STATE_IDLE;
+        data_in_valid_reg <= 1'b0;
+        data_out_ready_reg <= 1'b0;
+        wb_stb_o_reg <= 1'b0;
+        wb_cyc_o_reg <= 1'b0;
+        busy_reg <= 1'b0;
+    end
 end
 
 i2c_slave #(

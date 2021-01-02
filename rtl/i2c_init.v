@@ -431,6 +431,30 @@ always @* begin
 end
 
 always @(posedge clk) begin
+    state_reg <= state_next;
+
+    // read init_data ROM
+    init_data_reg <= init_data[address_next];
+
+    address_reg <= address_next;
+    address_ptr_reg <= address_ptr_next;
+    data_ptr_reg <= data_ptr_next;
+
+    cur_address_reg <= cur_address_next;
+
+    cmd_address_reg <= cmd_address_next;
+    cmd_start_reg <= cmd_start_next;
+    cmd_write_reg <= cmd_write_next;
+    cmd_stop_reg <= cmd_stop_next;
+    cmd_valid_reg <= cmd_valid_next;
+
+    data_out_reg <= data_out_next;
+    data_out_valid_reg <= data_out_valid_next;
+
+    start_flag_reg <= start & start_flag_next;
+
+    busy_reg <= (state_reg != STATE_IDLE);
+
     if (rst) begin
         state_reg <= STATE_IDLE;
 
@@ -449,33 +473,7 @@ always @(posedge clk) begin
         start_flag_reg <= 1'b0;
 
         busy_reg <= 1'b0;
-    end else begin
-        state_reg <= state_next;
-
-        // read init_data ROM
-        init_data_reg <= init_data[address_next];
-
-        address_reg <= address_next;
-        address_ptr_reg <= address_ptr_next;
-        data_ptr_reg <= data_ptr_next;
-
-        cur_address_reg <= cur_address_next;
-
-        cmd_valid_reg <= cmd_valid_next;
-
-        data_out_valid_reg <= data_out_valid_next;
-
-        start_flag_reg <= start & start_flag_next;
-
-        busy_reg <= (state_reg != STATE_IDLE);
     end
-
-    cmd_address_reg <= cmd_address_next;
-    cmd_start_reg <= cmd_start_next;
-    cmd_write_reg <= cmd_write_next;
-    cmd_stop_reg <= cmd_stop_next;
-
-    data_out_reg <= data_out_next;
 end
 
 endmodule

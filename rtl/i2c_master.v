@@ -827,6 +827,55 @@ always @* begin
 end
 
 always @(posedge clk) begin
+    state_reg <= state_next;
+    phy_state_reg <= phy_state_next;
+
+    phy_rx_data_reg <= phy_rx_data_next;
+
+    addr_reg <= addr_next;
+    data_reg <= data_next;
+    last_reg <= last_next;
+
+    mode_read_reg <= mode_read_next;
+    mode_write_multiple_reg <= mode_write_multiple_next;
+    mode_stop_reg <= mode_stop_next;
+
+    delay_reg <= delay_next;
+    delay_scl_reg <= delay_scl_next;
+    delay_sda_reg <= delay_sda_next;
+
+    bit_count_reg <= bit_count_next;
+
+    cmd_ready_reg <= cmd_ready_next;
+
+    data_in_ready_reg <= data_in_ready_next;
+
+    data_out_reg <= data_out_next;
+    data_out_last_reg <= data_out_last_next;
+    data_out_valid_reg <= data_out_valid_next;
+
+    scl_i_reg <= scl_i;
+    sda_i_reg <= sda_i;
+
+    scl_o_reg <= scl_o_next;
+    sda_o_reg <= sda_o_next;
+
+    last_scl_i_reg <= scl_i_reg;
+    last_sda_i_reg <= sda_i_reg;
+
+    busy_reg <= !(state_reg == STATE_IDLE || state_reg == STATE_ACTIVE_WRITE || state_reg == STATE_ACTIVE_READ) || !(phy_state_reg == PHY_STATE_IDLE || phy_state_reg == PHY_STATE_ACTIVE);
+
+    if (start_bit) begin
+        bus_active_reg <= 1'b1;
+    end else if (stop_bit) begin
+        bus_active_reg <= 1'b0;
+    end else begin
+        bus_active_reg <= bus_active_reg;
+    end
+
+    bus_control_reg <= bus_control_next;
+    missed_ack_reg <= missed_ack_next;
+
     if (rst) begin
         state_reg <= STATE_IDLE;
         phy_state_reg <= PHY_STATE_IDLE;
@@ -842,54 +891,7 @@ always @(posedge clk) begin
         bus_active_reg <= 1'b0;
         bus_control_reg <= 1'b0;
         missed_ack_reg <= 1'b0;
-    end else begin
-        state_reg <= state_next;
-        phy_state_reg <= phy_state_next;
-
-        delay_reg <= delay_next;
-        delay_scl_reg <= delay_scl_next;
-        delay_sda_reg <= delay_sda_next;
-
-        cmd_ready_reg <= cmd_ready_next;
-        data_in_ready_reg <= data_in_ready_next;
-        data_out_valid_reg <= data_out_valid_next;
-
-        scl_o_reg <= scl_o_next;
-        sda_o_reg <= sda_o_next;
-
-        busy_reg <= !(state_reg == STATE_IDLE || state_reg == STATE_ACTIVE_WRITE || state_reg == STATE_ACTIVE_READ) || !(phy_state_reg == PHY_STATE_IDLE || phy_state_reg == PHY_STATE_ACTIVE);
-
-        if (start_bit) begin
-            bus_active_reg <= 1'b1;
-        end else if (stop_bit) begin
-            bus_active_reg <= 1'b0;
-        end else begin
-            bus_active_reg <= bus_active_reg;
-        end
-
-        bus_control_reg <= bus_control_next;
-        missed_ack_reg <= missed_ack_next;
     end
-
-    phy_rx_data_reg <= phy_rx_data_next;
-
-    addr_reg <= addr_next;
-    data_reg <= data_next;
-    last_reg <= last_next;
-
-    mode_read_reg <= mode_read_next;
-    mode_write_multiple_reg <= mode_write_multiple_next;
-    mode_stop_reg <= mode_stop_next;
-
-    bit_count_reg <= bit_count_next;
-
-    data_out_reg <= data_out_next;
-    data_out_last_reg <= data_out_last_next;
-
-    scl_i_reg <= scl_i;
-    sda_i_reg <= sda_i;
-    last_scl_i_reg <= scl_i_reg;
-    last_sda_i_reg <= sda_i_reg;
 end
 
 endmodule
