@@ -123,13 +123,13 @@ Status register:
 busy: high when module is performing an I2C operation
 bus_cont: high when module has control of active bus
 bus_act: high when bus is active
-miss_ack: set high when an ACK pulse from a slave device is not seen; cleared when read
+miss_ack: set high when an ACK pulse from a slave device is not seen; write 1 to clear
 cmd_empty: command FIFO empty
 cmd_full: command FIFO full
-cmd_ovf: command FIFO overflow; cleared when read
+cmd_ovf: command FIFO overflow; write 1 to clear
 wr_empty: write data FIFO empty
 wr_full: write data FIFO full
-wr_ovf: write data FIFO overflow; cleared when read
+wr_ovf: write data FIFO overflow; write 1 to clear
 rd_empty: read data FIFO is empty
 rd_full: read data FIFO is full
 
@@ -534,6 +534,19 @@ always @* begin
         case ({s_axil_awaddr[3:2], 2'b00})
             4'h0: begin
                 // status register
+                if (s_axil_wstrb[0]) begin
+                    if (s_axil_wdata[3]) begin
+                        missed_ack_next = missed_ack_int;
+                    end
+                end
+                if (s_axil_wstrb[1]) begin
+                    if (s_axil_wdata[10]) begin
+                        cmd_fifo_overflow_next = 1'b0;
+                    end
+                    if (s_axil_wdata[13]) begin
+                        write_fifo_overflow_next = 1'b0;
+                    end
+                end
             end
             4'h4: begin
                 // command
@@ -605,11 +618,6 @@ always @* begin
                 s_axil_rdata_next[13] = write_fifo_overflow_reg;
                 s_axil_rdata_next[14] = read_fifo_empty;
                 s_axil_rdata_next[15] = read_fifo_full;
-
-                missed_ack_next = missed_ack_int;
-
-                cmd_fifo_overflow_next = 1'b0;
-                write_fifo_overflow_next = 1'b0;
             end
             4'h4: begin
                 // command

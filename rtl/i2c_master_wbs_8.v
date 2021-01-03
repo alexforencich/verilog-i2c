@@ -104,13 +104,13 @@ Status registers:
 busy: high when module is performing an I2C operation
 bus_cont: high when module has control of active bus
 bus_act: high when bus is active
-miss_ack: set high when an ACK pulse from a slave device is not seen; cleared when read
+miss_ack: set high when an ACK pulse from a slave device is not seen; write 1 to clear
 cmd_empty: command FIFO empty
 cmd_full: command FIFO full
-cmd_ovf: command FIFO overflow; cleared when read
+cmd_ovf: command FIFO overflow; write 1 to clear
 wr_empty: write data FIFO empty
 wr_full: write data FIFO full
-wr_ovf: write data FIFO overflow; cleared when read
+wr_ovf: write data FIFO overflow; write 1 to clear
 rd_empty: read data FIFO is empty
 rd_full: read data FIFO is full
 
@@ -462,10 +462,19 @@ always @* begin
             // write cycle
             case (wbs_adr_i)
                 4'h0: begin
-                    // status register
+                    // status
+                    if (wbs_dat_i[3]) begin
+                        missed_ack_next = missed_ack_int;
+                    end
                 end
                 4'h1: begin
-                    // status register
+                    // FIFO status
+                    if (wbs_dat_i[2]) begin
+                        cmd_fifo_overflow_next = 1'b0;
+                    end
+                    if (wbs_dat_i[5]) begin
+                        write_fifo_overflow_next = 1'b0;
+                    end
                 end
                 4'h2: begin
                     // command address
@@ -519,11 +528,9 @@ always @* begin
                     wbs_dat_o_next[5] = 1'b0;
                     wbs_dat_o_next[6] = 1'b0;
                     wbs_dat_o_next[7] = 1'b0;
-
-                    missed_ack_next = missed_ack_int;
                 end
                 4'h1: begin
-                    // status
+                    // FIFO status
                     wbs_dat_o_next[0] = cmd_fifo_empty;
                     wbs_dat_o_next[1] = cmd_fifo_full;
                     wbs_dat_o_next[2] = cmd_fifo_overflow_reg;
@@ -532,9 +539,6 @@ always @* begin
                     wbs_dat_o_next[5] = write_fifo_overflow_reg;
                     wbs_dat_o_next[6] = read_fifo_empty;
                     wbs_dat_o_next[7] = read_fifo_full;
-
-                    cmd_fifo_overflow_next = 1'b0;
-                    write_fifo_overflow_next = 1'b0;
                 end
                 4'h2: begin
                     // command address

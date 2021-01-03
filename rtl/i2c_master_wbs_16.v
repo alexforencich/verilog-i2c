@@ -104,13 +104,13 @@ Status register:
 busy: high when module is performing an I2C operation
 bus_cont: high when module has control of active bus
 bus_act: high when bus is active
-miss_ack: set high when an ACK pulse from a slave device is not seen; cleared when read
+miss_ack: set high when an ACK pulse from a slave device is not seen; write 1 to clear
 cmd_empty: command FIFO empty
 cmd_full: command FIFO full
-cmd_ovf: command FIFO overflow; cleared when read
+cmd_ovf: command FIFO overflow; write 1 to clear
 wr_empty: write data FIFO empty
 wr_full: write data FIFO full
-wr_ovf: write data FIFO overflow; cleared when read
+wr_ovf: write data FIFO overflow; write 1 to clear
 rd_empty: read data FIFO is empty
 rd_full: read data FIFO is full
 
@@ -475,6 +475,19 @@ always @* begin
             case (wbs_adr_i)
                 3'h0: begin
                     // status register
+                    if (wbs_sel_i[0]) begin
+                        if (wbs_dat_i[3]) begin
+                            missed_ack_next = missed_ack_int;
+                        end
+                    end
+                    if (wbs_sel_i[1]) begin
+                        if (wbs_dat_i[10]) begin
+                            cmd_fifo_overflow_next = 1'b0;
+                        end
+                        if (wbs_dat_i[13]) begin
+                            write_fifo_overflow_next = 1'b0;
+                        end
+                    end
                 end
                 3'h2: begin
                     // command
@@ -541,14 +554,6 @@ always @* begin
                     wbs_dat_o_next[13] = write_fifo_overflow_reg;
                     wbs_dat_o_next[14] = read_fifo_empty;
                     wbs_dat_o_next[15] = read_fifo_full;
-
-                    if (wbs_sel_i[0]) begin
-                        missed_ack_next = missed_ack_int;
-                    end
-                    if (wbs_sel_i[1]) begin
-                        cmd_fifo_overflow_next = 1'b0;
-                        write_fifo_overflow_next = 1'b0;
-                    end
                 end
                 3'h2: begin
                     // command
