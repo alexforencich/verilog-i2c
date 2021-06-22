@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2015-2017 Alex Forencich
+Copyright (c) 2015-2021 Alex Forencich
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -69,13 +69,13 @@ general-purpose processor.
 
 Copy this file and change init_data and INIT_DATA_LEN as needed.
 
-This module can be used in two modes: simple device initalization, or multiple
+This module can be used in two modes: simple device initialization, or multiple
 device initialization.  In multiple device mode, the same initialization sequence
-can be performed on multiple different device addresses.  
+can be performed on multiple different device addresses.
 
 To use single device mode, only use the start write to address and write data commands.
 The module will generate the I2C commands in sequential order.  Terminate the list
-with a 0 entry.  
+with a 0 entry.
 
 To use the multiple device mode, use the start data and start address block commands
 to set up lists of initialization data and device addresses.  The module enters
@@ -97,6 +97,7 @@ Commands:
 00 0000011 : start write to current address
 00 0001000 : start address block
 00 0001001 : start data block
+00 001dddd : delay 2**(16+d) cycles
 00 1000001 : send I2C stop
 01 aaaaaaa : start write to address
 1 dddddddd : write 8-bit data
@@ -184,6 +185,8 @@ reg [AW-1:0] data_ptr_reg = {AW{1'b0}}, data_ptr_next;
 
 reg [6:0] cur_address_reg = 7'd0, cur_address_next;
 
+reg [31:0] delay_counter_reg = 32'd0, delay_counter_next;
+
 reg [6:0] m_axis_cmd_address_reg = 7'd0, m_axis_cmd_address_next;
 reg m_axis_cmd_start_reg = 1'b0, m_axis_cmd_start_next;
 reg m_axis_cmd_write_reg = 1'b0, m_axis_cmd_write_next;
@@ -220,6 +223,8 @@ always @* begin
 
     cur_address_next = cur_address_reg;
 
+    delay_counter_next = delay_counter_reg;
+
     m_axis_cmd_address_next = m_axis_cmd_address_reg;
     m_axis_cmd_start_next = m_axis_cmd_start_reg & ~(m_axis_cmd_valid & m_axis_cmd_ready);
     m_axis_cmd_write_next = m_axis_cmd_write_reg & ~(m_axis_cmd_valid & m_axis_cmd_ready);
@@ -233,6 +238,10 @@ always @* begin
 
     if (m_axis_cmd_valid | m_axis_data_tvalid) begin
         // wait for output registers to clear
+        state_next = state_reg;
+    end else if (delay_counter_reg != 0) begin
+        // delay
+        delay_counter_next = delay_counter_reg - 1;
         state_next = state_reg;
     end else begin
         case (state_reg)
@@ -256,9 +265,9 @@ always @* begin
 
                     m_axis_data_tdata_next = init_data_reg[7:0];
                     m_axis_data_tvalid_next = 1'b1;
-                    
+
                     address_next = address_reg + 1;
-                    
+
                     state_next = STATE_RUN;
                 end else if (init_data_reg[8:7] == 2'b01) begin
                     // write address
@@ -266,7 +275,14 @@ always @* begin
                     m_axis_cmd_start_next = 1'b1;
 
                     address_next = address_reg + 1;
-                    
+
+                    state_next = STATE_RUN;
+                end else if (init_data_reg[8:4] == 5'b00001) begin
+                    // delay
+                    delay_counter_next = 32'd1 << (init_data_reg[3:0]+16);
+
+                    address_next = address_reg + 1;
+
                     state_next = STATE_RUN;
                 end else if (init_data_reg == 9'b001000001) begin
                     // send stop
@@ -442,6 +458,8 @@ always @(posedge clk) begin
 
     cur_address_reg <= cur_address_next;
 
+    delay_counter_reg <= delay_counter_next;
+
     m_axis_cmd_address_reg <= m_axis_cmd_address_next;
     m_axis_cmd_start_reg <= m_axis_cmd_start_next;
     m_axis_cmd_write_reg <= m_axis_cmd_write_next;
@@ -465,6 +483,8 @@ always @(posedge clk) begin
         data_ptr_reg <= {AW{1'b0}};
 
         cur_address_reg <= 7'd0;
+
+        delay_counter_reg <= 32'd0;
 
         m_axis_cmd_valid_reg <= 1'b0;
 
