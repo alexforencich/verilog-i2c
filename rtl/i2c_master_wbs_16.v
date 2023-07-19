@@ -34,11 +34,11 @@ module i2c_master_wbs_16 #
     parameter DEFAULT_PRESCALE = 1,
     parameter FIXED_PRESCALE = 0,
     parameter CMD_FIFO = 1,
-    parameter CMD_FIFO_ADDR_WIDTH = 5,
+    parameter CMD_FIFO_DEPTH = 32,
     parameter WRITE_FIFO = 1,
-    parameter WRITE_FIFO_ADDR_WIDTH = 5,
+    parameter WRITE_FIFO_DEPTH = 32,
     parameter READ_FIFO = 1,
-    parameter READ_FIFO_ADDR_WIDTH = 5
+    parameter READ_FIFO_DEPTH = 32
 )
 (
     input  wire        clk,
@@ -319,7 +319,7 @@ generate
 
 if (CMD_FIFO) begin
     axis_fifo #(
-        .ADDR_WIDTH(CMD_FIFO_ADDR_WIDTH),
+        .DEPTH(CMD_FIFO_DEPTH),
         .DATA_WIDTH(7+5),
         .KEEP_ENABLE(0),
         .LAST_ENABLE(0),
@@ -363,7 +363,7 @@ end
 
 if (WRITE_FIFO) begin
     axis_fifo #(
-        .ADDR_WIDTH(WRITE_FIFO_ADDR_WIDTH),
+        .DEPTH(WRITE_FIFO_DEPTH),
         .DATA_WIDTH(8),
         .KEEP_ENABLE(0),
         .LAST_ENABLE(1),
@@ -403,7 +403,7 @@ end
 
 if (READ_FIFO) begin
     axis_fifo #(
-        .ADDR_WIDTH(READ_FIFO_ADDR_WIDTH),
+        .DEPTH(READ_FIFO_DEPTH),
         .DATA_WIDTH(8),
         .KEEP_ENABLE(0),
         .LAST_ENABLE(1),
