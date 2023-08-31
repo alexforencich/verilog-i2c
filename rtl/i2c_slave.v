@@ -272,6 +272,9 @@ always @* begin
         state_next = STATE_ADDRESS;
     end else if (release_bus || stop_bit) begin
         // got stop bit or release bus command, latch out data, return to idle
+        scl_o_next = 1'b1;
+        sda_o_next = 1'b1;
+        
         data_valid_next = 1'b0;
         data_out_reg_valid_next = 1'b0;
         m_axis_data_tlast_next = 1'b1;
@@ -282,6 +285,9 @@ always @* begin
         case (state_reg)
             STATE_IDLE: begin
                 // line idle
+                scl_o_next = 1'b1;
+                sda_o_next = 1'b1;
+        
                 data_valid_next = 1'b0;
                 data_out_reg_valid_next = 1'b0;
                 bus_addressed_next = 1'b0;
