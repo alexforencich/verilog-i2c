@@ -182,7 +182,7 @@ I/O pin.  This would prevent devices from stretching the clock period.
 
 */
 
-localparam [4:0]
+localparam [3:0]
     STATE_IDLE = 4'd0,
     STATE_ACTIVE_WRITE = 4'd1,
     STATE_ACTIVE_READ = 4'd2,
@@ -196,7 +196,7 @@ localparam [4:0]
     STATE_READ = 4'd10,
     STATE_STOP = 4'd11;
 
-reg [4:0] state_reg = STATE_IDLE, state_next;
+reg [3:0] state_reg = STATE_IDLE, state_next;
 
 localparam [4:0]
     PHY_STATE_IDLE = 5'd0,
@@ -216,7 +216,7 @@ localparam [4:0]
     PHY_STATE_STOP_2 = 5'd14,
     PHY_STATE_STOP_3 = 5'd15;
 
-reg [4:0] phy_state_reg = STATE_IDLE, phy_state_next;
+reg [4:0] phy_state_reg = PHY_STATE_IDLE, phy_state_next;
 
 reg phy_start_bit;
 reg phy_stop_bit;
@@ -236,7 +236,7 @@ reg mode_read_reg = 1'b0, mode_read_next;
 reg mode_write_multiple_reg = 1'b0, mode_write_multiple_next;
 reg mode_stop_reg = 1'b0, mode_stop_next;
 
-reg [16:0] delay_reg = 16'd0, delay_next;
+reg [16:0] delay_reg = 17'd0, delay_next;
 reg delay_scl_reg = 1'b0, delay_scl_next;
 reg delay_sda_reg = 1'b0, delay_sda_next;
 
@@ -372,7 +372,7 @@ always @* begin
                         mode_stop_next = s_axis_cmd_stop;
 
                         s_axis_cmd_ready_next = 1'b0;
-                        
+
                         if (s_axis_cmd_start || s_axis_cmd_address != addr_reg || s_axis_cmd_read) begin
                             // address or mode mismatch or forced start - repeated start
 
@@ -419,7 +419,7 @@ always @* begin
                         mode_stop_next = s_axis_cmd_stop;
 
                         s_axis_cmd_ready_next = 1'b0;
-                        
+
                         if (s_axis_cmd_start || s_axis_cmd_address != addr_reg || s_axis_cmd_write) begin
                             // address or mode mismatch or forced start - repeated start
 
@@ -508,7 +508,7 @@ always @* begin
                 if (mode_read_reg) begin
                     // start read
                     bit_count_next = 4'd8;
-                    data_next = 1'b0;
+                    data_next = 'b0;
                     state_next = STATE_READ;
                 end else begin
                     // start write
@@ -524,7 +524,7 @@ always @* begin
                     data_next = s_axis_data_tdata;
                     last_next = s_axis_data_tlast;
                     bit_count_next = 4'd8;
-                    s_axis_data_tready_next = 1'b0;
+                    s_axis_data_tready_next = 'b0;
                     state_next = STATE_WRITE_2;
                 end else begin
                     // wait for data
@@ -592,6 +592,9 @@ always @* begin
                 phy_stop_bit = 1'b1;
                 state_next = STATE_IDLE;
             end
+            default: begin
+                state_next = STATE_IDLE;
+            end
         endcase
     end
 end
@@ -616,7 +619,7 @@ always @* begin
         scl_o_next = 1'b1;
         delay_scl_next = 1'b0;
         delay_sda_next = 1'b0;
-        delay_next = 1'b0;
+        delay_next = 'b0;
         phy_state_next = PHY_STATE_IDLE;
     end else if (delay_scl_reg) begin
         // wait for SCL to match command
@@ -638,7 +641,7 @@ always @* begin
                 scl_o_next = 1'b1;
                 if (phy_start_bit) begin
                     sda_o_next = 1'b0;
-                    delay_next = prescale;
+                    delay_next = {1'b0, prescale};
                     phy_state_next = PHY_STATE_START_1;
                 end else begin
                     phy_state_next = PHY_STATE_IDLE;
@@ -648,19 +651,19 @@ always @* begin
                 // bus active
                 if (phy_start_bit) begin
                     sda_o_next = 1'b1;
-                    delay_next = prescale;
+                    delay_next = {1'b0, prescale};
                     phy_state_next = PHY_STATE_REPEATED_START_1;
                 end else if (phy_write_bit) begin
                     sda_o_next = phy_tx_data;
-                    delay_next = prescale;
+                    delay_next = {1'b0, prescale};
                     phy_state_next = PHY_STATE_WRITE_BIT_1;
                 end else if (phy_read_bit) begin
                     sda_o_next = 1'b1;
-                    delay_next = prescale;
+                    delay_next = {1'b0, prescale};
                     phy_state_next = PHY_STATE_READ_BIT_1;
                 end else if (phy_stop_bit) begin
                     sda_o_next = 1'b0;
-                    delay_next = prescale;
+                    delay_next = {1'b0, prescale};
                     phy_state_next = PHY_STATE_STOP_1;
                 end else begin
                     phy_state_next = PHY_STATE_ACTIVE;
@@ -676,7 +679,7 @@ always @* begin
 
                 scl_o_next = 1'b1;
                 delay_scl_next = 1'b1;
-                delay_next = prescale;
+                delay_next = {1'b0, prescale};
                 phy_state_next = PHY_STATE_REPEATED_START_2;
             end
             PHY_STATE_REPEATED_START_2: begin
@@ -688,7 +691,7 @@ always @* begin
                 //
 
                 sda_o_next = 1'b0;
-                delay_next = prescale;
+                delay_next = {1'b0, prescale};
                 phy_state_next = PHY_STATE_START_1;
             end
             PHY_STATE_START_1: begin
@@ -700,7 +703,7 @@ always @* begin
                 //
 
                 scl_o_next = 1'b0;
-                delay_next = prescale;
+                delay_next = {1'b0, prescale};
                 phy_state_next = PHY_STATE_START_2;
             end
             PHY_STATE_START_2: begin
@@ -723,7 +726,7 @@ always @* begin
 
                 scl_o_next = 1'b1;
                 delay_scl_next = 1'b1;
-                delay_next = prescale << 1;
+                delay_next = {prescale, 1'b0};
                 phy_state_next = PHY_STATE_WRITE_BIT_2;
             end
             PHY_STATE_WRITE_BIT_2: begin
@@ -734,7 +737,7 @@ always @* begin
                 // scl __/    \__
 
                 scl_o_next = 1'b0;
-                delay_next = prescale;
+                delay_next = {1'b0, prescale};
                 phy_state_next = PHY_STATE_WRITE_BIT_3;
             end
             PHY_STATE_WRITE_BIT_3: begin
@@ -755,7 +758,7 @@ always @* begin
 
                 scl_o_next = 1'b1;
                 delay_scl_next = 1'b1;
-                delay_next = prescale;
+                delay_next = {1'b0, prescale};
                 phy_state_next = PHY_STATE_READ_BIT_2;
             end
             PHY_STATE_READ_BIT_2: begin
@@ -766,7 +769,7 @@ always @* begin
                 // scl __/    \__
 
                 phy_rx_data_next = sda_i_reg;
-                delay_next = prescale;
+                delay_next = {1'b0, prescale};
                 phy_state_next = PHY_STATE_READ_BIT_3;
             end
             PHY_STATE_READ_BIT_3: begin
@@ -777,7 +780,7 @@ always @* begin
                 // scl __/    \__
 
                 scl_o_next = 1'b0;
-                delay_next = prescale;
+                delay_next = {1'b0, prescale};
                 phy_state_next = PHY_STATE_READ_BIT_4;
             end
             PHY_STATE_READ_BIT_4: begin
@@ -798,7 +801,7 @@ always @* begin
 
                 scl_o_next = 1'b1;
                 delay_scl_next = 1'b1;
-                delay_next = prescale;
+                delay_next = {1'b0, prescale};
                 phy_state_next = PHY_STATE_STOP_2;
             end
             PHY_STATE_STOP_2: begin
@@ -809,7 +812,7 @@ always @* begin
                 // scl _______/
 
                 sda_o_next = 1'b1;
-                delay_next = prescale;
+                delay_next = {1'b0, prescale};
                 phy_state_next = PHY_STATE_STOP_3;
             end
             PHY_STATE_STOP_3: begin
@@ -820,6 +823,9 @@ always @* begin
                 // scl _______/
 
                 bus_control_next = 1'b0;
+                phy_state_next = PHY_STATE_IDLE;
+            end
+            default: begin
                 phy_state_next = PHY_STATE_IDLE;
             end
         endcase
@@ -879,7 +885,7 @@ always @(posedge clk) begin
     if (rst) begin
         state_reg <= STATE_IDLE;
         phy_state_reg <= PHY_STATE_IDLE;
-        delay_reg <= 16'd0;
+        delay_reg <= 17'd0;
         delay_scl_reg <= 1'b0;
         delay_sda_reg <= 1'b0;
         s_axis_cmd_ready_reg <= 1'b0;
