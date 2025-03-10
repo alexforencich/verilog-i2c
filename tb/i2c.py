@@ -506,5 +506,3 @@ class I2CMem(object):
                             break
 
         return instances()
-
-

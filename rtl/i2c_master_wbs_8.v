@@ -29,8 +29,7 @@ THE SOFTWARE.
 /*
  * I2C master wishbone slave wrapper (8 bit)
  */
-module i2c_master_wbs_8 #
-(
+module i2c_master_wbs_8 #(
     parameter DEFAULT_PRESCALE = 1,
     parameter FIXED_PRESCALE = 0,
     parameter CMD_FIFO = 1,
@@ -39,33 +38,32 @@ module i2c_master_wbs_8 #
     parameter WRITE_FIFO_DEPTH = 32,
     parameter READ_FIFO = 1,
     parameter READ_FIFO_DEPTH = 32
-)
-(
-    input  wire        clk,
-    input  wire        rst,
+) (
+    input wire clk,
+    input wire rst,
 
     /*
      * Host interface
      */
-    input  wire  [2:0] wbs_adr_i,   // ADR_I() address
-    input  wire  [7:0] wbs_dat_i,   // DAT_I() data in
-    output wire  [7:0] wbs_dat_o,   // DAT_O() data out
-    input  wire        wbs_we_i,    // WE_I write enable input
-    input  wire        wbs_stb_i,   // STB_I strobe input
-    output wire        wbs_ack_o,   // ACK_O acknowledge output
-    input  wire        wbs_cyc_i,   // CYC_I cycle input
+    input  wire [2:0] wbs_adr_i,  // ADR_I() address
+    input  wire [7:0] wbs_dat_i,  // DAT_I() data in
+    output wire [7:0] wbs_dat_o,  // DAT_O() data out
+    input  wire       wbs_we_i,   // WE_I write enable input
+    input  wire       wbs_stb_i,  // STB_I strobe input
+    output wire       wbs_ack_o,  // ACK_O acknowledge output
+    input  wire       wbs_cyc_i,  // CYC_I cycle input
 
     /*
      * I2C interface
      */
-    input  wire        i2c_scl_i,
-    output wire        i2c_scl_o,
-    output wire        i2c_scl_t,
-    input  wire        i2c_sda_i,
-    output wire        i2c_sda_o,
-    output wire        i2c_sda_t
+    input  wire i2c_scl_i,
+    output wire i2c_scl_o,
+    output wire i2c_scl_t,
+    input  wire i2c_sda_i,
+    output wire i2c_sda_o,
+    output wire i2c_sda_t
 );
-/*
+  /*
 
 I2C
 
@@ -239,199 +237,210 @@ I/O pin.  This would prevent devices from stretching the clock period.
 
 */
 
-reg [7:0] wbs_dat_o_reg = 8'd0, wbs_dat_o_next;
-reg wbs_ack_o_reg = 1'b0, wbs_ack_o_next;
+  reg [7:0] wbs_dat_o_reg = 8'd0, wbs_dat_o_next;
+  reg wbs_ack_o_reg = 1'b0, wbs_ack_o_next;
 
-reg [6:0] cmd_address_reg = 7'd0, cmd_address_next;
-reg cmd_start_reg = 1'b0, cmd_start_next;
-reg cmd_read_reg = 1'b0, cmd_read_next;
-reg cmd_write_reg = 1'b0, cmd_write_next;
-reg cmd_write_multiple_reg = 1'b0, cmd_write_multiple_next;
-reg cmd_stop_reg = 1'b0, cmd_stop_next;
-reg cmd_valid_reg = 1'b0, cmd_valid_next;
-wire cmd_ready;
+  reg [6:0] cmd_address_reg = 7'd0, cmd_address_next;
+  reg cmd_start_reg = 1'b0, cmd_start_next;
+  reg cmd_read_reg = 1'b0, cmd_read_next;
+  reg cmd_write_reg = 1'b0, cmd_write_next;
+  reg cmd_write_multiple_reg = 1'b0, cmd_write_multiple_next;
+  reg cmd_stop_reg = 1'b0, cmd_stop_next;
+  reg cmd_valid_reg = 1'b0, cmd_valid_next;
+  wire cmd_ready;
 
-reg [7:0] data_in_reg = 8'd0, data_in_next;
-reg data_in_valid_reg = 1'b0, data_in_valid_next;
-wire data_in_ready;
-reg data_in_last_reg = 1'b0, data_in_last_next;
+  reg [7:0] data_in_reg = 8'd0, data_in_next;
+  reg data_in_valid_reg = 1'b0, data_in_valid_next;
+  wire data_in_ready;
+  reg data_in_last_reg = 1'b0, data_in_last_next;
 
-wire [7:0] data_out;
-wire data_out_valid;
-reg data_out_ready_reg = 1'b0, data_out_ready_next;
-wire data_out_last;
+  wire [7:0] data_out;
+  wire data_out_valid;
+  reg data_out_ready_reg = 1'b0, data_out_ready_next;
+  wire data_out_last;
 
-reg [15:0] prescale_reg = DEFAULT_PRESCALE, prescale_next;
+  reg [15:0] prescale_reg = DEFAULT_PRESCALE, prescale_next;
 
-reg missed_ack_reg = 1'b0, missed_ack_next;
+  reg missed_ack_reg = 1'b0, missed_ack_next;
 
-assign wbs_dat_o = wbs_dat_o_reg;
-assign wbs_ack_o = wbs_ack_o_reg;
+  assign wbs_dat_o = wbs_dat_o_reg;
+  assign wbs_ack_o = wbs_ack_o_reg;
 
-wire [6:0] cmd_address_int;
-wire cmd_start_int;
-wire cmd_read_int;
-wire cmd_write_int;
-wire cmd_write_multiple_int;
-wire cmd_stop_int;
-wire cmd_valid_int;
-wire cmd_ready_int;
+  wire [6:0] cmd_address_int;
+  wire cmd_start_int;
+  wire cmd_read_int;
+  wire cmd_write_int;
+  wire cmd_write_multiple_int;
+  wire cmd_stop_int;
+  wire cmd_valid_int;
+  wire cmd_ready_int;
 
-wire [7:0] data_in_int;
-wire data_in_valid_int;
-wire data_in_ready_int;
-wire data_in_last_int;
+  wire [7:0] data_in_int;
+  wire data_in_valid_int;
+  wire data_in_ready_int;
+  wire data_in_last_int;
 
-wire [7:0] data_out_int;
-wire data_out_valid_int;
-wire data_out_ready_int;
-wire data_out_last_int;
+  wire [7:0] data_out_int;
+  wire data_out_valid_int;
+  wire data_out_ready_int;
+  wire data_out_last_int;
 
-wire busy_int;
-wire bus_control_int;
-wire bus_active_int;
-wire missed_ack_int;
+  wire busy_int;
+  wire bus_control_int;
+  wire bus_active_int;
+  wire missed_ack_int;
 
-wire cmd_fifo_empty = ~cmd_valid_int;
-wire cmd_fifo_full = ~cmd_ready;
-wire write_fifo_empty = ~data_in_valid_int;
-wire write_fifo_full = ~data_in_ready;
-wire read_fifo_empty = ~data_out_valid;
-wire read_fifo_full = ~data_out_ready_int;
+  wire cmd_fifo_empty = ~cmd_valid_int;
+  wire cmd_fifo_full = ~cmd_ready;
+  wire write_fifo_empty = ~data_in_valid_int;
+  wire write_fifo_full = ~data_in_ready;
+  wire read_fifo_empty = ~data_out_valid;
+  wire read_fifo_full = ~data_out_ready_int;
 
-reg cmd_fifo_overflow_reg = 1'b0, cmd_fifo_overflow_next;
-reg write_fifo_overflow_reg = 1'b0, write_fifo_overflow_next;
+  reg cmd_fifo_overflow_reg = 1'b0, cmd_fifo_overflow_next;
+  reg write_fifo_overflow_reg = 1'b0, write_fifo_overflow_next;
 
 
-generate
+  generate
 
-if (CMD_FIFO) begin
-    axis_fifo #(
-        .DEPTH(CMD_FIFO_DEPTH),
-        .DATA_WIDTH(7+5),
-        .KEEP_ENABLE(0),
-        .LAST_ENABLE(0),
-        .ID_ENABLE(0),
-        .DEST_ENABLE(0),
-        .USER_ENABLE(0),
-        .FRAME_FIFO(0)
-    )
-    cmd_fifo_inst (
-        .clk(clk),
-        .rst(rst),
-        // AXI input
-        .s_axis_tdata({cmd_address_reg, cmd_start_reg, cmd_read_reg, cmd_write_reg, cmd_write_multiple_reg, cmd_stop_reg}),
-        .s_axis_tkeep(0),
-        .s_axis_tvalid(cmd_valid_reg),
-        .s_axis_tready(cmd_ready),
-        .s_axis_tlast(1'b0),
-        .s_axis_tid(0),
-        .s_axis_tdest(0),
-        .s_axis_tuser(1'b0),
-        // AXI output
-        .m_axis_tdata({cmd_address_int, cmd_start_int, cmd_read_int, cmd_write_int, cmd_write_multiple_int, cmd_stop_int}),
-        .m_axis_tkeep(),
-        .m_axis_tvalid(cmd_valid_int),
-        .m_axis_tready(cmd_ready_int),
-        .m_axis_tlast(),
-        .m_axis_tid(),
-        .m_axis_tdest(),
-        .m_axis_tuser()
-    );
-end else begin
-    assign cmd_address_int = cmd_address_reg;
-    assign cmd_start_int = cmd_start_reg;
-    assign cmd_read_int = cmd_read_reg;
-    assign cmd_write_int = cmd_write_reg;
-    assign cmd_write_multiple_int = cmd_write_multiple_reg;
-    assign cmd_stop_int = cmd_stop_reg;
-    assign cmd_valid_int = cmd_valid_reg;
-    assign cmd_ready = cmd_ready_int;
-end
+    if (CMD_FIFO) begin
+      axis_fifo #(
+          .DEPTH(CMD_FIFO_DEPTH),
+          .DATA_WIDTH(7 + 5),
+          .KEEP_ENABLE(0),
+          .LAST_ENABLE(0),
+          .ID_ENABLE(0),
+          .DEST_ENABLE(0),
+          .USER_ENABLE(0),
+          .FRAME_FIFO(0)
+      ) cmd_fifo_inst (
+          .clk(clk),
+          .rst(rst),
+          // AXI input
+          .s_axis_tdata({
+            cmd_address_reg,
+            cmd_start_reg,
+            cmd_read_reg,
+            cmd_write_reg,
+            cmd_write_multiple_reg,
+            cmd_stop_reg
+          }),
+          .s_axis_tkeep(0),
+          .s_axis_tvalid(cmd_valid_reg),
+          .s_axis_tready(cmd_ready),
+          .s_axis_tlast(1'b0),
+          .s_axis_tid(0),
+          .s_axis_tdest(0),
+          .s_axis_tuser(1'b0),
+          // AXI output
+          .m_axis_tdata({
+            cmd_address_int,
+            cmd_start_int,
+            cmd_read_int,
+            cmd_write_int,
+            cmd_write_multiple_int,
+            cmd_stop_int
+          }),
+          .m_axis_tkeep(),
+          .m_axis_tvalid(cmd_valid_int),
+          .m_axis_tready(cmd_ready_int),
+          .m_axis_tlast(),
+          .m_axis_tid(),
+          .m_axis_tdest(),
+          .m_axis_tuser()
+      );
+    end else begin
+      assign cmd_address_int = cmd_address_reg;
+      assign cmd_start_int = cmd_start_reg;
+      assign cmd_read_int = cmd_read_reg;
+      assign cmd_write_int = cmd_write_reg;
+      assign cmd_write_multiple_int = cmd_write_multiple_reg;
+      assign cmd_stop_int = cmd_stop_reg;
+      assign cmd_valid_int = cmd_valid_reg;
+      assign cmd_ready = cmd_ready_int;
+    end
 
-if (WRITE_FIFO) begin
-    axis_fifo #(
-        .DEPTH(WRITE_FIFO_DEPTH),
-        .DATA_WIDTH(8),
-        .KEEP_ENABLE(0),
-        .LAST_ENABLE(1),
-        .ID_ENABLE(0),
-        .DEST_ENABLE(0),
-        .USER_ENABLE(0),
-        .FRAME_FIFO(0)
-    )
-    write_fifo_inst (
-        .clk(clk),
-        .rst(rst),
-        // AXI input
-        .s_axis_tdata(data_in_reg),
-        .s_axis_tkeep(0),
-        .s_axis_tvalid(data_in_valid_reg),
-        .s_axis_tready(data_in_ready),
-        .s_axis_tlast(data_in_last_reg),
-        .s_axis_tid(0),
-        .s_axis_tdest(0),
-        .s_axis_tuser(1'b0),
-        // AXI output
-        .m_axis_tdata(data_in_int),
-        .m_axis_tkeep(),
-        .m_axis_tvalid(data_in_valid_int),
-        .m_axis_tready(data_in_ready_int),
-        .m_axis_tlast(data_in_last_int),
-        .m_axis_tid(),
-        .m_axis_tdest(),
-        .m_axis_tuser()
-    );
-end else begin
-    assign data_in_int = data_in_reg;
-    assign data_in_valid = data_in_valid_reg;
-    assign data_in_ready = data_in_ready_int;
-    assign data_in_last = data_in_last_reg;
-end
+    if (WRITE_FIFO) begin
+      axis_fifo #(
+          .DEPTH(WRITE_FIFO_DEPTH),
+          .DATA_WIDTH(8),
+          .KEEP_ENABLE(0),
+          .LAST_ENABLE(1),
+          .ID_ENABLE(0),
+          .DEST_ENABLE(0),
+          .USER_ENABLE(0),
+          .FRAME_FIFO(0)
+      ) write_fifo_inst (
+          .clk(clk),
+          .rst(rst),
+          // AXI input
+          .s_axis_tdata(data_in_reg),
+          .s_axis_tkeep(0),
+          .s_axis_tvalid(data_in_valid_reg),
+          .s_axis_tready(data_in_ready),
+          .s_axis_tlast(data_in_last_reg),
+          .s_axis_tid(0),
+          .s_axis_tdest(0),
+          .s_axis_tuser(1'b0),
+          // AXI output
+          .m_axis_tdata(data_in_int),
+          .m_axis_tkeep(),
+          .m_axis_tvalid(data_in_valid_int),
+          .m_axis_tready(data_in_ready_int),
+          .m_axis_tlast(data_in_last_int),
+          .m_axis_tid(),
+          .m_axis_tdest(),
+          .m_axis_tuser()
+      );
+    end else begin
+      assign data_in_int   = data_in_reg;
+      assign data_in_valid = data_in_valid_reg;
+      assign data_in_ready = data_in_ready_int;
+      assign data_in_last  = data_in_last_reg;
+    end
 
-if (READ_FIFO) begin
-    axis_fifo #(
-        .DEPTH(READ_FIFO_DEPTH),
-        .DATA_WIDTH(8),
-        .KEEP_ENABLE(0),
-        .LAST_ENABLE(1),
-        .ID_ENABLE(0),
-        .DEST_ENABLE(0),
-        .USER_ENABLE(0),
-        .FRAME_FIFO(0)
-    )
-    read_fifo_inst (
-        .clk(clk),
-        .rst(rst),
-        // AXI input
-        .s_axis_tdata(data_out_int),
-        .s_axis_tkeep(0),
-        .s_axis_tvalid(data_out_valid_int),
-        .s_axis_tready(data_out_ready_int),
-        .s_axis_tlast(data_out_last_int),
-        .s_axis_tid(0),
-        .s_axis_tdest(0),
-        .s_axis_tuser(0),
-        // AXI output
-        .m_axis_tdata(data_out),
-        .m_axis_tkeep(),
-        .m_axis_tvalid(data_out_valid),
-        .m_axis_tready(data_out_ready_reg),
-        .m_axis_tlast(data_out_last),
-        .m_axis_tid(),
-        .m_axis_tdest(),
-        .m_axis_tuser()
-    );
-end else begin
-    assign data_out = data_out_int;
-    assign data_out_valid = data_out_valid_int;
-    assign data_out_ready_int = data_out_ready_reg;
-    assign data_out_last = data_out_last_int;
-end
+    if (READ_FIFO) begin
+      axis_fifo #(
+          .DEPTH(READ_FIFO_DEPTH),
+          .DATA_WIDTH(8),
+          .KEEP_ENABLE(0),
+          .LAST_ENABLE(1),
+          .ID_ENABLE(0),
+          .DEST_ENABLE(0),
+          .USER_ENABLE(0),
+          .FRAME_FIFO(0)
+      ) read_fifo_inst (
+          .clk(clk),
+          .rst(rst),
+          // AXI input
+          .s_axis_tdata(data_out_int),
+          .s_axis_tkeep(0),
+          .s_axis_tvalid(data_out_valid_int),
+          .s_axis_tready(data_out_ready_int),
+          .s_axis_tlast(data_out_last_int),
+          .s_axis_tid(0),
+          .s_axis_tdest(0),
+          .s_axis_tuser(0),
+          // AXI output
+          .m_axis_tdata(data_out),
+          .m_axis_tkeep(),
+          .m_axis_tvalid(data_out_valid),
+          .m_axis_tready(data_out_ready_reg),
+          .m_axis_tlast(data_out_last),
+          .m_axis_tid(),
+          .m_axis_tdest(),
+          .m_axis_tuser()
+      );
+    end else begin
+      assign data_out = data_out_int;
+      assign data_out_valid = data_out_valid_int;
+      assign data_out_ready_int = data_out_ready_reg;
+      assign data_out_last = data_out_last_int;
+    end
 
-endgenerate
+  endgenerate
 
-always @* begin
+  always @* begin
     wbs_dat_o_next = 8'd0;
     wbs_ack_o_next = 1'b0;
 
@@ -455,130 +464,130 @@ always @* begin
 
     cmd_fifo_overflow_next = cmd_fifo_overflow_reg;
     write_fifo_overflow_next = write_fifo_overflow_reg;
-    
+
     if (wbs_cyc_i & wbs_stb_i) begin
-        // bus cycle
-        if (wbs_we_i) begin
-            // write cycle
-            case (wbs_adr_i)
-                4'h0: begin
-                    // status
-                    if (wbs_dat_i[3]) begin
-                        missed_ack_next = missed_ack_int;
-                    end
-                end
-                4'h1: begin
-                    // FIFO status
-                    if (wbs_dat_i[2]) begin
-                        cmd_fifo_overflow_next = 1'b0;
-                    end
-                    if (wbs_dat_i[5]) begin
-                        write_fifo_overflow_next = 1'b0;
-                    end
-                end
-                4'h2: begin
-                    // command address
-                    cmd_address_next = wbs_dat_i;
-                end
-                4'h3: begin
-                    // command
-                    cmd_start_next = wbs_dat_i[0];
-                    cmd_read_next = wbs_dat_i[1];
-                    cmd_write_next = wbs_dat_i[2];
-                    //cmd_write_multiple_next = wbs_dat_i[3];
-                    cmd_stop_next = wbs_dat_i[4];
-                    cmd_valid_next = ~wbs_ack_o_reg & (cmd_start_next | cmd_read_next | cmd_write_next | cmd_stop_next);
+      // bus cycle
+      if (wbs_we_i) begin
+        // write cycle
+        case (wbs_adr_i)
+          4'h0: begin
+            // status
+            if (wbs_dat_i[3]) begin
+              missed_ack_next = missed_ack_int;
+            end
+          end
+          4'h1: begin
+            // FIFO status
+            if (wbs_dat_i[2]) begin
+              cmd_fifo_overflow_next = 1'b0;
+            end
+            if (wbs_dat_i[5]) begin
+              write_fifo_overflow_next = 1'b0;
+            end
+          end
+          4'h2: begin
+            // command address
+            cmd_address_next = wbs_dat_i;
+          end
+          4'h3: begin
+            // command
+            cmd_start_next = wbs_dat_i[0];
+            cmd_read_next = wbs_dat_i[1];
+            cmd_write_next = wbs_dat_i[2];
+            //cmd_write_multiple_next = wbs_dat_i[3];
+            cmd_stop_next = wbs_dat_i[4];
+            cmd_valid_next = ~wbs_ack_o_reg & (cmd_start_next | cmd_read_next | cmd_write_next | cmd_stop_next);
 
-                    cmd_fifo_overflow_next = cmd_fifo_overflow_next | (cmd_valid_next & ~cmd_ready);
-                end
-                4'h4: begin
-                    // data
-                    data_in_next = wbs_dat_i;
-                    data_in_valid_next = ~wbs_ack_o_reg;
+            cmd_fifo_overflow_next = cmd_fifo_overflow_next | (cmd_valid_next & ~cmd_ready);
+          end
+          4'h4: begin
+            // data
+            data_in_next = wbs_dat_i;
+            data_in_valid_next = ~wbs_ack_o_reg;
 
-                    write_fifo_overflow_next = write_fifo_overflow_next | ~data_in_ready;
-                end
-                4'h5: begin
-                    // reserved
-                end
-                4'h6: begin
-                    // prescale low
-                    if (!FIXED_PRESCALE) begin
-                        prescale_next[7:0] = wbs_dat_i;
-                    end
-                end
-                4'h7: begin
-                    // prescale high
-                    if (!FIXED_PRESCALE) begin
-                        prescale_next[15:8] = wbs_dat_i;
-                    end
-                end
-            endcase
-            wbs_ack_o_next = ~wbs_ack_o_reg;
-        end else begin
-            // read cycle
-            case (wbs_adr_i)
-                4'h0: begin
-                    // status
-                    wbs_dat_o_next[0] = busy_int;
-                    wbs_dat_o_next[1] = bus_control_int;
-                    wbs_dat_o_next[2] = bus_active_int;
-                    wbs_dat_o_next[3] = missed_ack_reg;
-                    wbs_dat_o_next[4] = 1'b0;
-                    wbs_dat_o_next[5] = 1'b0;
-                    wbs_dat_o_next[6] = 1'b0;
-                    wbs_dat_o_next[7] = 1'b0;
-                end
-                4'h1: begin
-                    // FIFO status
-                    wbs_dat_o_next[0] = cmd_fifo_empty;
-                    wbs_dat_o_next[1] = cmd_fifo_full;
-                    wbs_dat_o_next[2] = cmd_fifo_overflow_reg;
-                    wbs_dat_o_next[3] = write_fifo_empty;
-                    wbs_dat_o_next[4] = write_fifo_full;
-                    wbs_dat_o_next[5] = write_fifo_overflow_reg;
-                    wbs_dat_o_next[6] = read_fifo_empty;
-                    wbs_dat_o_next[7] = read_fifo_full;
-                end
-                4'h2: begin
-                    // command address
-                    wbs_dat_o_next = cmd_address_reg;
-                end
-                4'h3: begin
-                    // command
-                    wbs_dat_o_next[0] = cmd_start_reg;
-                    wbs_dat_o_next[1] = cmd_read_reg;
-                    wbs_dat_o_next[2] = cmd_write_reg;
-                    wbs_dat_o_next[3] = cmd_write_multiple_reg;
-                    wbs_dat_o_next[4] = cmd_stop_reg;
-                    wbs_dat_o_next[5] = 1'b0;
-                    wbs_dat_o_next[6] = 1'b0;
-                    wbs_dat_o_next[7] = 1'b0;
-                end
-                4'h4: begin
-                    // data
-                    wbs_dat_o_next = data_out;
-                    data_out_ready_next = !wbs_ack_o_reg && data_out_valid;
-                end
-                4'h5: begin
-                    // reserved
-                    wbs_dat_o_next = 8'd0;
-                end
-                4'h6: begin
-                    // prescale low
-                    wbs_dat_o_next = prescale_reg[7:0];
-                end
-                4'h7: begin
-                    // prescale high
-                    wbs_dat_o_next = prescale_reg[15:8];
-                end
-            endcase
-            wbs_ack_o_next = ~wbs_ack_o_reg;
-        end
+            write_fifo_overflow_next = write_fifo_overflow_next | ~data_in_ready;
+          end
+          4'h5: begin
+            // reserved
+          end
+          4'h6: begin
+            // prescale low
+            if (!FIXED_PRESCALE) begin
+              prescale_next[7:0] = wbs_dat_i;
+            end
+          end
+          4'h7: begin
+            // prescale high
+            if (!FIXED_PRESCALE) begin
+              prescale_next[15:8] = wbs_dat_i;
+            end
+          end
+        endcase
+        wbs_ack_o_next = ~wbs_ack_o_reg;
+      end else begin
+        // read cycle
+        case (wbs_adr_i)
+          4'h0: begin
+            // status
+            wbs_dat_o_next[0] = busy_int;
+            wbs_dat_o_next[1] = bus_control_int;
+            wbs_dat_o_next[2] = bus_active_int;
+            wbs_dat_o_next[3] = missed_ack_reg;
+            wbs_dat_o_next[4] = 1'b0;
+            wbs_dat_o_next[5] = 1'b0;
+            wbs_dat_o_next[6] = 1'b0;
+            wbs_dat_o_next[7] = 1'b0;
+          end
+          4'h1: begin
+            // FIFO status
+            wbs_dat_o_next[0] = cmd_fifo_empty;
+            wbs_dat_o_next[1] = cmd_fifo_full;
+            wbs_dat_o_next[2] = cmd_fifo_overflow_reg;
+            wbs_dat_o_next[3] = write_fifo_empty;
+            wbs_dat_o_next[4] = write_fifo_full;
+            wbs_dat_o_next[5] = write_fifo_overflow_reg;
+            wbs_dat_o_next[6] = read_fifo_empty;
+            wbs_dat_o_next[7] = read_fifo_full;
+          end
+          4'h2: begin
+            // command address
+            wbs_dat_o_next = cmd_address_reg;
+          end
+          4'h3: begin
+            // command
+            wbs_dat_o_next[0] = cmd_start_reg;
+            wbs_dat_o_next[1] = cmd_read_reg;
+            wbs_dat_o_next[2] = cmd_write_reg;
+            wbs_dat_o_next[3] = cmd_write_multiple_reg;
+            wbs_dat_o_next[4] = cmd_stop_reg;
+            wbs_dat_o_next[5] = 1'b0;
+            wbs_dat_o_next[6] = 1'b0;
+            wbs_dat_o_next[7] = 1'b0;
+          end
+          4'h4: begin
+            // data
+            wbs_dat_o_next = data_out;
+            data_out_ready_next = !wbs_ack_o_reg && data_out_valid;
+          end
+          4'h5: begin
+            // reserved
+            wbs_dat_o_next = 8'd0;
+          end
+          4'h6: begin
+            // prescale low
+            wbs_dat_o_next = prescale_reg[7:0];
+          end
+          4'h7: begin
+            // prescale high
+            wbs_dat_o_next = prescale_reg[15:8];
+          end
+        endcase
+        wbs_ack_o_next = ~wbs_ack_o_reg;
+      end
     end
-end
+  end
 
-always @(posedge clk) begin
+  always @(posedge clk) begin
     wbs_dat_o_reg <= wbs_dat_o_next;
     wbs_ack_o_reg <= wbs_ack_o_next;
 
@@ -604,59 +613,58 @@ always @(posedge clk) begin
     write_fifo_overflow_reg <= write_fifo_overflow_next;
 
     if (rst) begin
-        wbs_ack_o_reg <= 1'b0;
-        cmd_valid_reg <= 1'b0;
-        data_in_valid_reg <= 1'b0;
-        data_out_ready_reg <= 1'b0;
-        prescale_reg <= DEFAULT_PRESCALE;
-        missed_ack_reg <= 1'b0;
-        cmd_fifo_overflow_reg <= 0;
-        write_fifo_overflow_reg <= 0;
+      wbs_ack_o_reg <= 1'b0;
+      cmd_valid_reg <= 1'b0;
+      data_in_valid_reg <= 1'b0;
+      data_out_ready_reg <= 1'b0;
+      prescale_reg <= DEFAULT_PRESCALE;
+      missed_ack_reg <= 1'b0;
+      cmd_fifo_overflow_reg <= 0;
+      write_fifo_overflow_reg <= 0;
     end
-end
+  end
 
-i2c_master
-i2c_master_inst (
-    .clk(clk),
-    .rst(rst),
+  i2c_master i2c_master_inst (
+      .clk(clk),
+      .rst(rst),
 
-    // Host interface
-    .s_axis_cmd_address(cmd_address_int),
-    .s_axis_cmd_start(cmd_start_int),
-    .s_axis_cmd_read(cmd_read_int),
-    .s_axis_cmd_write(cmd_write_int),
-    .s_axis_cmd_write_multiple(cmd_write_multiple_int),
-    .s_axis_cmd_stop(cmd_stop_int),
-    .s_axis_cmd_valid(cmd_valid_int),
-    .s_axis_cmd_ready(cmd_ready_int),
+      // Host interface
+      .s_axis_cmd_address(cmd_address_int),
+      .s_axis_cmd_start(cmd_start_int),
+      .s_axis_cmd_read(cmd_read_int),
+      .s_axis_cmd_write(cmd_write_int),
+      .s_axis_cmd_write_multiple(cmd_write_multiple_int),
+      .s_axis_cmd_stop(cmd_stop_int),
+      .s_axis_cmd_valid(cmd_valid_int),
+      .s_axis_cmd_ready(cmd_ready_int),
 
-    .s_axis_data_tdata(data_in_int),
-    .s_axis_data_tvalid(data_in_valid_int),
-    .s_axis_data_tready(data_in_ready_int),
-    .s_axis_data_tlast(data_in_last_int),
-    
-    .m_axis_data_tdata(data_out_int),
-    .m_axis_data_tvalid(data_out_valid_int),
-    .m_axis_data_tready(data_out_ready_int),
-    .m_axis_data_tlast(data_out_last_int),
-    
-    // I2C interface
-    .scl_i(i2c_scl_i),
-    .scl_o(i2c_scl_o),
-    .scl_t(i2c_scl_t),
-    .sda_i(i2c_sda_i),
-    .sda_o(i2c_sda_o),
-    .sda_t(i2c_sda_t),
+      .s_axis_data_tdata (data_in_int),
+      .s_axis_data_tvalid(data_in_valid_int),
+      .s_axis_data_tready(data_in_ready_int),
+      .s_axis_data_tlast (data_in_last_int),
 
-    // Status
-    .busy(busy_int),
-    .bus_control(bus_control_int),
-    .bus_active(bus_active_int),
-    .missed_ack(missed_ack_int),
+      .m_axis_data_tdata (data_out_int),
+      .m_axis_data_tvalid(data_out_valid_int),
+      .m_axis_data_tready(data_out_ready_int),
+      .m_axis_data_tlast (data_out_last_int),
 
-    // Configuration
-    .prescale(prescale_reg),
-    .stop_on_idle(1'b0)
-);
+      // I2C interface
+      .scl_i(i2c_scl_i),
+      .scl_o(i2c_scl_o),
+      .scl_t(i2c_scl_t),
+      .sda_i(i2c_sda_i),
+      .sda_o(i2c_sda_o),
+      .sda_t(i2c_sda_t),
+
+      // Status
+      .busy(busy_int),
+      .bus_control(bus_control_int),
+      .bus_active(bus_active_int),
+      .missed_ack(missed_ack_int),
+
+      // Configuration
+      .prescale(prescale_reg),
+      .stop_on_idle(1'b0)
+  );
 
 endmodule

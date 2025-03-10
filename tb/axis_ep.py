@@ -519,4 +519,3 @@ class AXIStreamSink(object):
                             first = True
 
         return instances()
-

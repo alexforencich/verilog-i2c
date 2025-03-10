@@ -1,0 +1,25 @@
+name: Icarus Verilog CI
+
+on:
+  push:
+    branches: [ "*" ]
+  pull_request:
+    branches: [ "*" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y iverilog verilator
+    
+    - name: Compile with Icarus Verilog
+      run: iverilog -o sim_output -y rtl tb/i2c_master_tb.v
+    
+    - name: Run simulation
+      run: ./sim_output

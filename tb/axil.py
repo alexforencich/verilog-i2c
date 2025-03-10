@@ -544,4 +544,3 @@ class AXILiteRam(object):
                     s_axil_rvalid.next = False
 
         return instances()
-

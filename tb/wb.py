@@ -438,4 +438,3 @@ class WBRam(object):
                             print("[%s] Read word a:0x%08x d:%s" % (name, addr, " ".join(("{:02x}".format(c) for c in bytearray(data)))))
 
         return instances()
-

@@ -31,76 +31,59 @@ THE SOFTWARE.
  */
 module test_i2c_init;
 
-// Parameters
+  // Parameters
 
-// Inputs
-reg clk = 0;
-reg rst = 0;
-reg [7:0] current_test = 0;
+  // Inputs
+  reg clk = 0;
+  reg rst = 0;
+  reg [7:0] current_test = 0;
 
-reg m_axis_cmd_ready = 0;
-reg m_axis_data_tready = 0;
-reg start = 0;
+  reg m_axis_cmd_ready = 0;
+  reg m_axis_data_tready = 0;
+  reg start = 0;
 
-// Outputs
-wire [6:0] m_axis_cmd_address;
-wire m_axis_cmd_start;
-wire m_axis_cmd_read;
-wire m_axis_cmd_write;
-wire m_axis_cmd_write_multiple;
-wire m_axis_cmd_stop;
-wire m_axis_cmd_valid;
-wire [7:0] m_axis_data_tdata;
-wire m_axis_data_tvalid;
-wire m_axis_data_tlast;
-wire busy;
+  // Outputs
+  wire [6:0] m_axis_cmd_address;
+  wire m_axis_cmd_start;
+  wire m_axis_cmd_read;
+  wire m_axis_cmd_write;
+  wire m_axis_cmd_write_multiple;
+  wire m_axis_cmd_stop;
+  wire m_axis_cmd_valid;
+  wire [7:0] m_axis_data_tdata;
+  wire m_axis_data_tvalid;
+  wire m_axis_data_tlast;
+  wire busy;
 
-initial begin
+  initial begin
     // myhdl integration
-    $from_myhdl(
-        clk,
-        rst,
-        current_test,
-        m_axis_cmd_ready,
-        m_axis_data_tready,
-        start);
-    $to_myhdl(
-        m_axis_cmd_address,
-        m_axis_cmd_start,
-        m_axis_cmd_read,
-        m_axis_cmd_write,
-        m_axis_cmd_write_multiple,
-        m_axis_cmd_stop,
-        m_axis_cmd_valid,
-        m_axis_data_tdata,
-        m_axis_data_tvalid,
-        m_axis_data_tlast,
-        busy
-    );
+    $from_myhdl(clk, rst, current_test, m_axis_cmd_ready, m_axis_data_tready, start);
+    $to_myhdl(m_axis_cmd_address, m_axis_cmd_start, m_axis_cmd_read, m_axis_cmd_write,
+              m_axis_cmd_write_multiple, m_axis_cmd_stop, m_axis_cmd_valid, m_axis_data_tdata,
+              m_axis_data_tvalid, m_axis_data_tlast, busy);
 
     // dump file
     $dumpfile("test_i2c_init.lxt");
     $dumpvars(0, test_i2c_init);
-end
+  end
 
-i2c_init
-UUT (
-    .clk(clk),
-    .rst(rst),
-    .m_axis_cmd_address(m_axis_cmd_address),
-    .m_axis_cmd_start(m_axis_cmd_start),
-    .m_axis_cmd_read(m_axis_cmd_read),
-    .m_axis_cmd_write(m_axis_cmd_write),
-    .m_axis_cmd_write_multiple(m_axis_cmd_write_multiple),
-    .m_axis_cmd_stop(m_axis_cmd_stop),
-    .m_axis_cmd_valid(m_axis_cmd_valid),
-    .m_axis_cmd_ready(m_axis_cmd_ready),
-    .m_axis_data_tdata(m_axis_data_tdata),
-    .m_axis_data_tvalid(m_axis_data_tvalid),
-    .m_axis_data_tready(m_axis_data_tready),
-    .m_axis_data_tlast(m_axis_data_tlast),
-    .busy(busy),
-    .start(start)
-);
+  i2c_init UUT (
+      .clk(clk),
+      .rst(rst),
+      .m_axis_cmd_address(m_axis_cmd_address),
+      .m_axis_cmd_start(m_axis_cmd_start),
+      .m_axis_cmd_read(m_axis_cmd_read),
+      .m_axis_cmd_write(m_axis_cmd_write),
+      .m_axis_cmd_write_multiple(m_axis_cmd_write_multiple),
+      .m_axis_cmd_stop(m_axis_cmd_stop),
+      .m_axis_cmd_valid(m_axis_cmd_valid),
+      .m_axis_cmd_ready(m_axis_cmd_ready),
+      .m_axis_data_tdata(m_axis_data_tdata),
+      .m_axis_data_tvalid(m_axis_data_tvalid),
+      .m_axis_data_tready(m_axis_data_tready),
+      .m_axis_data_tlast(m_axis_data_tlast),
+      .busy(busy),
+      .start(start)
+  );
 
 endmodule

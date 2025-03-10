@@ -31,104 +31,79 @@ THE SOFTWARE.
  */
 module test_i2c_slave;
 
-// Parameters
-parameter FILTER_LEN = 2;
+  // Parameters
+  parameter FILTER_LEN = 2;
 
-// Inputs
-reg clk = 0;
-reg rst = 0;
-reg [7:0] current_test = 0;
+  // Inputs
+  reg clk = 0;
+  reg rst = 0;
+  reg [7:0] current_test = 0;
 
-reg release_bus = 0;
-reg [7:0] s_axis_data_tdata = 0;
-reg s_axis_data_tvalid = 0;
-reg s_axis_data_tlast = 0;
-reg m_axis_data_tready = 0;
-reg scl_i = 1;
-reg sda_i = 1;
-reg enable = 0;
-reg [6:0] device_address = 0;
-reg [6:0] device_address_mask = 0;
+  reg release_bus = 0;
+  reg [7:0] s_axis_data_tdata = 0;
+  reg s_axis_data_tvalid = 0;
+  reg s_axis_data_tlast = 0;
+  reg m_axis_data_tready = 0;
+  reg scl_i = 1;
+  reg sda_i = 1;
+  reg enable = 0;
+  reg [6:0] device_address = 0;
+  reg [6:0] device_address_mask = 0;
 
-// Outputs
-wire s_axis_data_tready;
-wire [7:0] m_axis_data_tdata;
-wire m_axis_data_tvalid;
-wire m_axis_data_tlast;
-wire scl_o;
-wire scl_t;
-wire sda_o;
-wire sda_t;
-wire busy;
-wire [6:0] bus_address;
-wire bus_addressed;
-wire bus_active;
+  // Outputs
+  wire s_axis_data_tready;
+  wire [7:0] m_axis_data_tdata;
+  wire m_axis_data_tvalid;
+  wire m_axis_data_tlast;
+  wire scl_o;
+  wire scl_t;
+  wire sda_o;
+  wire sda_t;
+  wire busy;
+  wire [6:0] bus_address;
+  wire bus_addressed;
+  wire bus_active;
 
-initial begin
+  initial begin
     // myhdl integration
-    $from_myhdl(
-        clk,
-        rst,
-        current_test,
-        release_bus,
-        s_axis_data_tdata,
-        s_axis_data_tvalid,
-        s_axis_data_tlast,
-        m_axis_data_tready,
-        scl_i,
-        sda_i,
-        enable,
-        device_address,
-        device_address_mask
-    );
-    $to_myhdl(
-        s_axis_data_tready,
-        m_axis_data_tdata,
-        m_axis_data_tvalid,
-        m_axis_data_tlast,
-        scl_o,
-        scl_t,
-        sda_o,
-        sda_t,
-        busy,
-        bus_address,
-        bus_addressed,
-        bus_active
-    );
+    $from_myhdl(clk, rst, current_test, release_bus, s_axis_data_tdata, s_axis_data_tvalid,
+                s_axis_data_tlast, m_axis_data_tready, scl_i, sda_i, enable, device_address,
+                device_address_mask);
+    $to_myhdl(s_axis_data_tready, m_axis_data_tdata, m_axis_data_tvalid, m_axis_data_tlast, scl_o,
+              scl_t, sda_o, sda_t, busy, bus_address, bus_addressed, bus_active);
 
     // dump file
     $dumpfile("test_i2c_slave.lxt");
     $dumpvars(0, test_i2c_slave);
-end
+  end
 
-i2c_slave #(
-    .FILTER_LEN(FILTER_LEN)
-)
-UUT (
-    .clk(clk),
-    .rst(rst),
-    .release_bus(release_bus),
-    .s_axis_data_tdata(s_axis_data_tdata),
-    .s_axis_data_tvalid(s_axis_data_tvalid),
-    .s_axis_data_tready(s_axis_data_tready),
-    .s_axis_data_tlast(s_axis_data_tlast),
-    .m_axis_data_tdata(m_axis_data_tdata),
-    .m_axis_data_tvalid(m_axis_data_tvalid),
-    .m_axis_data_tready(m_axis_data_tready),
-    .m_axis_data_tlast(m_axis_data_tlast),
-    .scl_i(scl_i),
-    .scl_o(scl_o),
-    .scl_t(scl_t),
-    .sda_i(sda_i),
-    .sda_o(sda_o),
-    .sda_t(sda_t),
-    .busy(busy),
-    .bus_address(bus_address),
-    .bus_addressed(bus_addressed),
-    .bus_active(bus_active),
-    .enable(enable),
-    .device_address(device_address),
-    .device_address_mask(device_address_mask)
-);
+  i2c_slave #(
+      .FILTER_LEN(FILTER_LEN)
+  ) UUT (
+      .clk(clk),
+      .rst(rst),
+      .release_bus(release_bus),
+      .s_axis_data_tdata(s_axis_data_tdata),
+      .s_axis_data_tvalid(s_axis_data_tvalid),
+      .s_axis_data_tready(s_axis_data_tready),
+      .s_axis_data_tlast(s_axis_data_tlast),
+      .m_axis_data_tdata(m_axis_data_tdata),
+      .m_axis_data_tvalid(m_axis_data_tvalid),
+      .m_axis_data_tready(m_axis_data_tready),
+      .m_axis_data_tlast(m_axis_data_tlast),
+      .scl_i(scl_i),
+      .scl_o(scl_o),
+      .scl_t(scl_t),
+      .sda_i(sda_i),
+      .sda_o(sda_o),
+      .sda_t(sda_t),
+      .busy(busy),
+      .bus_address(bus_address),
+      .bus_addressed(bus_addressed),
+      .bus_active(bus_active),
+      .enable(enable),
+      .device_address(device_address),
+      .device_address_mask(device_address_mask)
+  );
 
 endmodule
