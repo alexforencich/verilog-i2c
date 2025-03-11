@@ -182,7 +182,7 @@ I/O pin.  This would prevent devices from stretching the clock period.
 
 */
 
-localparam [4:0]
+localparam [3:0]
     STATE_IDLE = 4'd0,
     STATE_ACTIVE_WRITE = 4'd1,
     STATE_ACTIVE_READ = 4'd2,
@@ -196,7 +196,7 @@ localparam [4:0]
     STATE_READ = 4'd10,
     STATE_STOP = 4'd11;
 
-reg [4:0] state_reg = STATE_IDLE, state_next;
+reg [3:0] state_reg = STATE_IDLE, state_next;
 
 localparam [4:0]
     PHY_STATE_IDLE = 5'd0,
