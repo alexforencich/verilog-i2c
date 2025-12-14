@@ -1,0 +1,1 @@
+The initialization engine shall replay ROM-defined I2C command/data sequences at startup so attached devices can be configured without a processor.

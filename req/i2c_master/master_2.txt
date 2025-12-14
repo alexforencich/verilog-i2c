@@ -1,0 +1,1 @@
+The master shall drive open-drain SCL/SDA pins with separate output and tristate controls so multiple I2C devices can share the bus without contention or loss of clock stretching support.

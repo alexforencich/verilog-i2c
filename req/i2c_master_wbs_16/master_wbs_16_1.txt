@@ -1,0 +1,1 @@
+The wrapper shall present a 16-bit Wishbone register map—status, command, data, and prescale—to let hosts drive I2C addresses/control bits and monitor FIFO/bus status flags needed for transaction management.

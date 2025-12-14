@@ -1,0 +1,1 @@
+For I2C reads, the wrapper shall issue an AXI-Lite read when the bus is ready, store the returned word, and stream it back byte-by-byte to the I2C master while advancing the address pointer for each word fetched.

@@ -1,0 +1,1 @@
+During I2C-initiated writes, the wrapper shall pack incoming bytes into the AXI data word, set the corresponding byte strobes, and launch an AXI-Lite write transaction once a full word is ready or the I2C block ends, then increment the address pointer per completed word.

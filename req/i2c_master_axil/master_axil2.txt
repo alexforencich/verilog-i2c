@@ -1,0 +1,1 @@
+The command register shall let software assert start, read, write, write-multiple, and stop bits that are pushed into the command FIFO with a specified 7-bit address for each transaction.

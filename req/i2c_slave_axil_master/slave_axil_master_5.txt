@@ -1,0 +1,1 @@
+The wrapper shall expose I2C bus reachability via `bus_addressed`/`bus_active`, drive `busy` whenever it leaves the idle state, and couple the I2C slave streaming interface to the AXI-Lite master ports to bridge bus traffic between protocols.

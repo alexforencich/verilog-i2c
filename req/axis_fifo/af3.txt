@@ -1,0 +1,1 @@
+The FIFO shall only drop bad frames or refuse new frames when full if frame-aware operation is enabled, preventing mid-frame truncation of I2C packets.

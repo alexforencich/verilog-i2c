@@ -1,0 +1,1 @@
+The design shall recognize START/STOP conditions on the filtered lines and transition its state machine accordingly to enter address reception or return to idle.

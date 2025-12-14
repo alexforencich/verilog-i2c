@@ -1,0 +1,1 @@
+The slave shall translate matched I2C writes into AXI-stream output bytes with `tlast` marking the final byte and shall hold SCL low (clock stretching) if the downstream AXI consumer is not ready to accept data.

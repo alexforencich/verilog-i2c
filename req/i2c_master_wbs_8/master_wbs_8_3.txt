@@ -1,0 +1,1 @@
+Wishbone writes shall push start/read/write/stop command bits and data bytes into their respective FIFOs while tracking overflow conditions that software can clear via FIFO status writes.

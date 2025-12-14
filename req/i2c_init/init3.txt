@@ -1,0 +1,1 @@
+The engine shall decode 9-bit command words that encode stops, mode exits, start-write variants, block delimiters, delay counts, explicit stop commands, and raw data bytes for I2C initialization traffic.

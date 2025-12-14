@@ -1,0 +1,1 @@
+During a read transaction, the device shall shift out the internal register contents, accept ACK/NACK from the master, and if ACKed, automatically prepare the next byte for continuous reads.

@@ -1,0 +1,1 @@
+The initialization ROM shall preload example sequences that write a register on one device and then repeat the same transaction across four device addresses before issuing an exit and stop, demonstrating both operating modes.

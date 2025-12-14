@@ -1,0 +1,1 @@
+Wishbone writes shall enqueue start/read/write/write-multiple/stop commands and data bytes into their FIFOs while detecting overflow conditions that software can clear through status writes.

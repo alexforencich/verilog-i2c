@@ -1,0 +1,1 @@
+The wrapper shall buffer command, write-data, and read-data paths with optional AXI-stream FIFOs and expose empty/full/overflow indicators so Wishbone transactions can run decoupled from I2C bus timing.

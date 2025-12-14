@@ -1,0 +1,1 @@
+The wrapper shall present an 8-bit Wishbone register map that exposes status, FIFO status, command address, command control bits, data, and prescale registers for host access to the I2C master.

@@ -1,0 +1,1 @@
+The FIFO shall enter frame-aware mode (FRAME_FIFO) only when end-of-frame signaling is propagated (LAST_ENABLE = 1), ensuring complete I2C frames remain contiguous through the buffer.

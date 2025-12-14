@@ -1,0 +1,1 @@
+On an I2C write access, the wrapper shall first collect the address header bytes from the slave stream, seed the internal address pointer and word offset, clear strobes, and then transition into write handling unless the transaction ends immediately.

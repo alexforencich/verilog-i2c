@@ -1,0 +1,1 @@
+The AXI-Lite status register shall expose busy, bus control/active, missed-ack, and FIFO empty/full/overflow indicators so software can monitor I2C activity and buffer health.

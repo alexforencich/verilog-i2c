@@ -1,0 +1,1 @@
+The master shall use a programmable prescale input to derive the SCL timing from the host clock, ensuring compliance with the target I2C bit rate for attached devices.

@@ -1,0 +1,1 @@
+When the received 7-bit address matches the configured device address, the module shall acknowledge and branch into read or write handling based on the R/W bit.

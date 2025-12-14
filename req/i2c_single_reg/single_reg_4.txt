@@ -1,0 +1,1 @@
+During a write transaction, the device shall shift in eight data bits, latch them into the internal register, and assert an ACK before returning to idle or continuing as directed by the bus master.

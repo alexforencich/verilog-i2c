@@ -1,0 +1,1 @@
+The slave shall translate host-supplied AXI-stream input bytes into I2C read data, stretching SCL when data is not yet available and releasing SDA for ACK/NACK evaluation between bytes.

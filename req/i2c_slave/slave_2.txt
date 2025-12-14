@@ -1,0 +1,1 @@
+The slave shall match incoming 7-bit addresses against `device_address` with `device_address_mask` when `enable` is asserted before acknowledging, preventing unintended responses on shared buses.

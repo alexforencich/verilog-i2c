@@ -1,0 +1,1 @@
+The AXI-Lite master interface shall enforce power-of-two-aligned word widths and sizes, halting simulation if the configured bus geometry is not an even multiple of the data width and byte lane count.

@@ -1,0 +1,1 @@
+The data register shall mark valid read bytes and the last byte of a block write, and these indicators shall be accessed with atomic 16-bit transfers to keep FIFO state consistent.

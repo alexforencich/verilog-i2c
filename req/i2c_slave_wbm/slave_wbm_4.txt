@@ -1,0 +1,1 @@
+During I2C writes, the wrapper shall pack incoming bytes into the Wishbone data word, assert the corresponding byte select strobes, and launch a Wishbone write once a full word is assembled or the I2C block ends, incrementing the address pointer per completed word.

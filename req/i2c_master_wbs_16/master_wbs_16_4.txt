@@ -1,0 +1,1 @@
+The wrapper shall program prescale values into the I2C master and surface busy, bus-control/active, and missed-ack signals through the register interface for clock tuning and error handling.

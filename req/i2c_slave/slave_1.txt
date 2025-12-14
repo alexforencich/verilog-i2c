@@ -1,0 +1,1 @@
+The slave shall filter SCL and SDA inputs with a configurable length (`FILTER_LEN`) and derive start/stop detection from the filtered signals to avoid false edges on noisy buses.

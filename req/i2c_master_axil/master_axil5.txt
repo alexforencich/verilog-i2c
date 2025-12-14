@@ -1,0 +1,1 @@
+The prescale register shall program the SCL divider as one quarter of the target I2C clock period in host-clock cycles (prescale = Fclk / (FI2Cclk * 4)).

@@ -1,0 +1,1 @@
+For I2C reads, the wrapper shall issue a Wishbone read when the stream is ready, capture the returned data word, advance the address pointer, and then stream the buffered bytes back over I2C until the word is exhausted or bus addressing changes.

@@ -1,0 +1,1 @@
+The wrapper shall forward prescale configuration and propagate busy/bus control/active/missed-ack status from the I2C master core to the Wishbone-visible registers, enabling hosts to manage clock rates and observe bus health.

@@ -1,0 +1,1 @@
+The Wishbone bridge shall validate that configured word widths and sizes form an even power-of-two geometry and halt simulation if the data width cannot be evenly divided by the word and byte-lane parameters.

@@ -1,0 +1,1 @@
+The wrapper shall drive `busy` whenever it leaves the idle state and expose `bus_addressed`/`bus_active` status from the I2C slave instance, coupling the I2C streaming interface to the Wishbone master signals while permitting external configuration of the device address and filtering.

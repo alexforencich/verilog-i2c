@@ -1,0 +1,1 @@
+The wrapper shall enforce that simultaneously setting read and write in one command is illegal and will be ignored, preventing invalid mixed-direction operations.

@@ -1,0 +1,1 @@
+The slave shall expose busy, bus_active, bus_address, and bus_addressed status outputs reflecting the current bus ownership and addressing state for integration with system-level bus arbitration or monitoring logic.

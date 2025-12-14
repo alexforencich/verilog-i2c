@@ -1,0 +1,1 @@
+On an I2C write access, the wrapper shall first collect the address header bytes from the slave stream to seed the internal address pointer before issuing AXI-Lite writes, initializing word offsets and clearing strobes as part of the transition from address capture into data handling.

@@ -1,0 +1,1 @@
+The master shall expose busy, bus_control, bus_active, and missed_ack status signals so system logic can track bus ownership and acknowledge failures during transactions.

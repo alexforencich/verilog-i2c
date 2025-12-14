@@ -1,0 +1,1 @@
+The FIFO shall specify a nonzero bad-frame user-bit mask when marking frames for discard, enabling downstream I2C logic to detect and filter corrupted frames.

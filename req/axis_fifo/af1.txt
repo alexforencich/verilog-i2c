@@ -1,0 +1,1 @@
+The FIFO shall include at least one output pipeline register (PIPELINE_OUTPUT >= 1) so I2C AXI-Stream traffic always has buffered headroom on the egress path.
