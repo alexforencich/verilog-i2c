@@ -26,6 +26,22 @@ processor.
 
 I2C master module with AXI stream interfaces to control logic.
 
+`STOP_ON_NACK=1` optionally terminates on an address or write-data NACK, including
+commands without STOP. Address NACK produces no received data. The default is 0,
+preserving the legacy streaming behavior. A host enabling the option must cancel
+or flush unconsumed TX data and queued commands before retrying; the core cannot
+flush external AXI-stream FIFOs. The AXI-Lite/Wishbone wrappers retain the default.
+
+START hold, repeated-START setup, STOP setup and bus-free delay use two prescale
+intervals. With 25 MHz input and prescale 63/16, the focused tests check their
+Standard/Fast-mode digital minima. This is not a claim of full electrical I2C
+compliance or compliance at arbitrary prescale/clock values.
+
+Run `python3 tb/test_i2c_master_faults.py` with Icarus Verilog installed for
+standalone NACK, repeated-START, STOP and bus-free tests, including the default
+legacy behavior. This runner requires no MyHDL installation.
+
+
 ### i2c_master_axil module
 
 I2C master module with 32-bit AXI lite slave interface.

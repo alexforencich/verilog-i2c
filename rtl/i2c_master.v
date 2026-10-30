@@ -29,7 +29,10 @@ THE SOFTWARE.
 /*
  * I2C master
  */
-module i2c_master (
+module i2c_master #(
+    // Preserve existing streaming users by default. See host recovery contract.
+    parameter STOP_ON_NACK = 0
+) (
     input  wire        clk,
     input  wire        rst,
 
@@ -95,6 +98,16 @@ Write
 sda   \__/_6_X_5_X_4_X_3_X_2_X_1_X_0_/ W \_A_/_7_X_6_X_5_X_4_X_3_X_2_X_1_X_0_\_A_/_7_X_6_X_5_X_4_X_3_X_2_X_1_X_0_/ N \__/
     ____   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   _   ____
 scl  ST \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ SP
+
+NACK handling:
+
+STOP_ON_NACK=0 preserves the legacy missed_ack notification without automatic
+termination. STOP_ON_NACK=1 emits STOP on address or write-data NACK, regardless
+of the command stop flag. No read byte is returned on an address NACK.
+Unconsumed TX stream data and queued commands are owned by the caller: it must
+cancel/flush them before submitting another transaction after missed_ack. This
+option is intended for hosts that serialize commands and can reset their queues;
+it does not add AXI-stream packet cancellation or flush external FIFOs.
 
 Commands:
 
@@ -505,7 +518,10 @@ always @* begin
                 // read ack bit
                 missed_ack_next = phy_rx_data_reg;
 
-                if (mode_read_reg) begin
+                if (STOP_ON_NACK && phy_rx_data_reg) begin
+                    phy_stop_bit = 1'b1;
+                    state_next = STATE_IDLE;
+                end else if (mode_read_reg) begin
                     // start read
                     bit_count_next = 4'd8;
                     data_next = 1'b0;
@@ -549,7 +565,10 @@ always @* begin
                 // read ack bit
                 missed_ack_next = phy_rx_data_reg;
 
-                if (mode_write_multiple_reg && !last_reg) begin
+                if (STOP_ON_NACK && phy_rx_data_reg) begin
+                    phy_stop_bit = 1'b1;
+                    state_next = STATE_IDLE;
+                end else if (mode_write_multiple_reg && !last_reg) begin
                     // more to write
                     state_next = STATE_WRITE_1;
                 end else if (mode_stop_reg) begin
@@ -638,7 +657,7 @@ always @* begin
                 scl_o_next = 1'b1;
                 if (phy_start_bit) begin
                     sda_o_next = 1'b0;
-                    delay_next = prescale;
+                    delay_next = {prescale, 1'b0};
                     phy_state_next = PHY_STATE_START_1;
                 end else begin
                     phy_state_next = PHY_STATE_IDLE;
@@ -676,7 +695,7 @@ always @* begin
 
                 scl_o_next = 1'b1;
                 delay_scl_next = 1'b1;
-                delay_next = prescale;
+                delay_next = {prescale, 1'b0};
                 phy_state_next = PHY_STATE_REPEATED_START_2;
             end
             PHY_STATE_REPEATED_START_2: begin
@@ -688,7 +707,7 @@ always @* begin
                 //
 
                 sda_o_next = 1'b0;
-                delay_next = prescale;
+                delay_next = {prescale, 1'b0};
                 phy_state_next = PHY_STATE_START_1;
             end
             PHY_STATE_START_1: begin
@@ -798,7 +817,7 @@ always @* begin
 
                 scl_o_next = 1'b1;
                 delay_scl_next = 1'b1;
-                delay_next = prescale;
+                delay_next = {prescale, 1'b0};
                 phy_state_next = PHY_STATE_STOP_2;
             end
             PHY_STATE_STOP_2: begin
@@ -809,7 +828,7 @@ always @* begin
                 // scl _______/
 
                 sda_o_next = 1'b1;
-                delay_next = prescale;
+                delay_next = {prescale, 1'b0};
                 phy_state_next = PHY_STATE_STOP_3;
             end
             PHY_STATE_STOP_3: begin

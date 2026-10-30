@@ -1,0 +1,9 @@
+name: I2C master fault and timing regression
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  faults:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y iverilog
+      - run: python3 tb/test_i2c_master_faults.py
